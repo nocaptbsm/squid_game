@@ -10,12 +10,12 @@ const NUMBERS = ['001', '047', '067', '101', '212', '333', '456']
 function BloodDrip({ left, delay }: { left: string; delay: number }) {
   return (
     <div
-      className="absolute top-0 w-[2px] bg-gradient-to-b from-red-900 to-red-700"
+      className="absolute top-0 w-[2px] bg-gradient-to-b from-red-700 to-red-500"
       style={{
         left,
         height: `${20 + Math.random() * 60}px`,
         animation: `drip 3s ${delay}s ease-in-out infinite`,
-        opacity: 0.7,
+        opacity: 0.85,
       }}
     />
   )
@@ -23,11 +23,11 @@ function BloodDrip({ left, delay }: { left: string; delay: number }) {
 
 function EKGLine() {
   return (
-    <svg viewBox="0 0 400 60" className="w-full h-12 opacity-30" fill="none">
+    <svg viewBox="0 0 400 60" className="w-full h-12 opacity-60" fill="none">
       <polyline
         points="0,30 40,30 55,30 65,5 75,55 85,10 95,30 140,30 160,30 175,30 185,8 195,52 205,12 215,30 260,30 280,30 295,30 305,6 315,54 325,8 335,30 400,30"
-        stroke="#cc0000"
-        strokeWidth="1.5"
+        stroke="#ff2020"
+        strokeWidth="2"
         strokeDasharray="1000"
         strokeDashoffset="1000"
         style={{ animation: 'ekg 3s ease-in-out infinite' }}
@@ -122,7 +122,7 @@ export default function LandingPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="fixed inset-0 z-[9999] bg-black/95 flex flex-col items-center justify-center cursor-pointer"
+          className="fixed inset-0 z-[9999] bg-black/90 flex flex-col items-center justify-center cursor-pointer"
           onClick={unlockAudio}
         >
           <motion.div
@@ -130,13 +130,13 @@ export default function LandingPage() {
             transition={{ repeat: Infinity, duration: 2 }}
             className="text-center"
           >
-            <div className="text-6xl mb-6 text-red-900/60 heartbeat" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
+            <div className="text-6xl mb-6 text-red-600/80 heartbeat" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
               ◯ △ □
             </div>
-            <p className="text-[11px] tracking-[0.5em] text-red-900/70 uppercase mb-2" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
+            <p className="text-[11px] tracking-[0.5em] text-red-500/90 uppercase mb-2" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
               TAP TO ENTER
             </p>
-            <p className="text-[9px] tracking-[0.3em] text-[#a88080] uppercase" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
+            <p className="text-[9px] tracking-[0.3em] text-[#d4b8b8] uppercase" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
               — BEST EXPERIENCED WITH SOUND —
             </p>
           </motion.div>
@@ -168,7 +168,7 @@ export default function LandingPage() {
           <motion.div
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.5 } }}
-            className="fixed inset-0 z-[9995] bg-[#020202] flex flex-col items-center justify-center"
+            className="fixed inset-0 z-[9995] bg-[#200a0b] flex flex-col items-center justify-center"
           >
             <div className="text-center max-w-xs">
               <div className="flex gap-8 items-center justify-center mb-8">
@@ -178,8 +178,8 @@ export default function LandingPage() {
                     initial={{ opacity: 0, y: -30, scale: 0.5 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ delay: i * 0.25, type: 'spring', stiffness: 200 }}
-                    className="text-5xl text-red-900 flicker"
-                    style={{ textShadow: '0 0 20px rgba(180,0,0,0.8)' }}
+                    className="text-5xl text-red-600 flicker"
+                    style={{ textShadow: '0 0 25px rgba(255,30,30,0.9)' }}
                   >
                     {sym}
                   </motion.div>
@@ -200,7 +200,7 @@ export default function LandingPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: [0, 1, 0, 1] }}
                     transition={{ duration: 0.6 }}
-                    className="text-red-900/60 text-[10px] tracking-[0.4em] uppercase mt-2"
+                    className="text-red-500/80 text-[10px] tracking-[0.4em] uppercase mt-2"
                     style={{ fontFamily: 'Share Tech Mono, monospace' }}
                   >
                     SUBJECT LOCATED...
@@ -213,7 +213,7 @@ export default function LandingPage() {
                   <motion.p
                     initial={{ opacity: 0, scale: 1.2 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="text-red-700/80 text-sm tracking-[0.3em] uppercase mt-4"
+                    className="text-red-500 text-sm tracking-[0.3em] uppercase mt-4"
                     style={{ fontFamily: 'Special Elite, cursive' }}
                   >
                     GOOD LUCK.
@@ -256,13 +256,13 @@ export default function LandingPage() {
               </div>
 
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="text-center mb-16">
-                <div className="text-[10px] tracking-[0.5em] text-red-900/60 mb-6 uppercase" style={{ fontFamily: 'Share Tech Mono, monospace' }}>── PARADOX 2025 ──</div>
+                <div className="text-[10px] tracking-[0.5em] text-red-700/80 mb-6 uppercase" style={{ fontFamily: 'Share Tech Mono, monospace' }}>── PARADOX 2025 ──</div>
                 <h1 className="text-6xl sm:text-7xl md:text-8xl mb-3 glitch flicker" data-text="SQUID GAME"
-                  style={{ fontFamily: 'Special Elite, cursive', color: '#e8e0e0', textShadow: '0 0 40px rgba(180,0,0,0.4), 2px 2px 0 #7a0000', letterSpacing: '0.05em' }}
+                  style={{ fontFamily: 'Special Elite, cursive', color: '#faf0f0', textShadow: '0 0 40px rgba(255,30,30,0.5), 2px 2px 0 #a00000', letterSpacing: '0.05em' }}
                 >
                   SQUID GAME
                 </h1>
-                <p className="text-[#d4b8b8] text-xs tracking-[0.4em] uppercase mt-4" style={{ fontFamily: 'Share Tech Mono, monospace' }}>456 entered. only 3 will survive.</p>
+                <p className="text-[#faf0f0] text-xs tracking-[0.4em] uppercase mt-4" style={{ fontFamily: 'Share Tech Mono, monospace' }}>456 entered. only 3 will survive.</p>
               </motion.div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
