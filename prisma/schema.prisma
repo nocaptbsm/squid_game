@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(VOLUNTEER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  scans     Scan[]
+}
+
+model Player {
+  id           String       @id @default(cuid())
+  qrToken      String       @unique  // UUID embedded in QR
+  playerNumber String       @unique  // e.g. "001", "042", "169"
+  name         String?
+  photoUrl     String?
+  photoLocked  Boolean      @default(false)
+  isRegistered Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  rounds       RoundStatus[]
+  scans        Scan[]
+  teamLogin    TeamLogin?
+}
+
+model RoundStatus {
+  id        String      @id @default(cuid())
+  player    Player      @relation(fields: [playerId], references: [id])
+  playerId  String
+  round     RoundName
+  status    RoundResult @default(PENDING)
+  updatedAt DateTime    @updatedAt
+  updatedBy String?     // volunteer userId
+
+  @@unique([playerId, round])
+}
+
+model Scan {
+  id         String   @id @default(cuid())
+  player     Player   @relation(fields: [playerId], references: [id])
+  playerId   String
+  volunteer  User     @relation(fields: [volunteerId], references: [id])
+  volunteerId String
+  scannedAt  DateTime @default(now())
+}
+
+model TeamLogin {
+  id       String @id @default(cuid())
+  player   Player @relation(fields: [playerId], references: [id])
+  playerId String @unique
+  pin      String // 4-digit hashed PIN for player self-view
+}
+
+enum Role {
+  ADMIN
+  VOLUNTEER
+}
+
+enum RoundName {
+  PRELIMINARY       // Treasure Hunt
+  RED_LIGHT_GREEN_LIGHT
+  HITCH_HIKE
+  SOUL_SEEKERS
+  GLASS_BRIDGE
+  THE_WRIGHT_WAY
+  CHOCOLATE_CRUCIBLE
+}
+
+enum RoundResult {
+  PENDING
+  SURVIVED
+  ELIMINATED
+}
