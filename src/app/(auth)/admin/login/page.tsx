@@ -31,23 +31,26 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <Link href="/" className="absolute top-6 left-6 text-sm text-muted-foreground hover:text-foreground transition-colors">
-        ← Back to portals
+    <div className="min-h-screen bg-[#051919] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Decorative Element */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-900/5 rounded-full blur-[100px] pointer-events-none" />
+
+      <Link href="/" className="absolute top-6 left-6 text-[10px] font-black uppercase tracking-[0.3em] text-red-900 hover:text-red-500 transition-colors z-20">
+        ← Abort Sequence
       </Link>
 
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="w-full max-w-sm relative z-10">
+        <div className="text-center mb-10">
+          <div className="w-16 h-16 border-2 border-red-500 shadow-[0_0_20px_rgba(227,27,109,0.2)] rounded-none flex items-center justify-center mx-auto mb-6 transform rotate-45">
+            <svg className="w-8 h-8 text-red-500 transform -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Admin Portal</h1>
-          <p className="text-sm text-muted-foreground mt-1">Sign in to manage the platform</p>
+          <h1 className="text-xl font-black uppercase tracking-[0.4em] text-white">Admin Protocol</h1>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-red-900 font-bold mt-2">Level 4 Clearance Required</p>
         </div>
 
-        <div className="h-card p-6">
+        <div className="bg-[#0a2424] border border-red-900/30 p-8 shadow-2xl">
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="h-label">Email address</label>
@@ -59,13 +62,13 @@ export default function AdminLogin() {
             </div>
 
             {error && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
+              <div className="p-3 rounded-none bg-red-950/30 border border-red-500/50 text-red-500 text-[10px] font-bold uppercase tracking-wider">
                 {error}
               </div>
             )}
 
-            <button type="submit" disabled={loading} className="h-btn w-full mt-2">
-              {loading ? 'Signing in...' : 'Sign in'}
+            <button type="submit" disabled={loading} className="h-btn w-full mt-4 !bg-red-600 hover:!bg-red-700 !rounded-none !py-4 font-black uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(220,38,38,0.2)]">
+              {loading ? 'Authorizing...' : 'Authorize Access'}
             </button>
           </form>
         </div>
