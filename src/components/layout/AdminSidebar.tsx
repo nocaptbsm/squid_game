@@ -20,13 +20,13 @@ export function AdminSidebar() {
   const [isRoundsExpanded, setIsRoundsExpanded] = React.useState(false)
 
   const links = [
-    { href: '/admin/protocol-qrs', label: 'Protocol QRs (350)', icon: Box },
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/players', label: 'Players', icon: Users },
   ]
 
   const roundLinks = [
     { href: '/admin/rounds/upload', label: 'Upload Players', icon: Upload },
+    { href: '/admin/protocol-qrs', label: 'Protocol QRs (350)', icon: Box },
     { href: '/admin/rounds/preliminary', label: 'Treasure Hunt', icon: Target },
     { href: '/admin/rounds/rlgl', label: 'Red Light Green Light', icon: Timer },
     { href: '/admin/rounds/hitch-hike', icon: Footprints, label: 'Hitch Hike' },
