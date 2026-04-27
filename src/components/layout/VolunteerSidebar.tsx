@@ -3,25 +3,23 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Printer, Settings, LogOut, ChevronLeft, Menu } from 'lucide-react'
+import { QrCode, RefreshCw, LogOut, ChevronLeft, Menu } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 
-export function AdminSidebar() {
+export function VolunteerSidebar() {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = React.useState(false)
   const [isMobileOpen, setIsMobileOpen] = React.useState(false)
 
-  // Auto-collapse on mobile when navigating
+  // Auto-collapse on mobile and minimize on selection
   React.useEffect(() => {
     setIsMobileOpen(false)
-    // Auto-minimize on selection as requested
     setIsCollapsed(true)
   }, [pathname])
 
   const links = [
-    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/players', label: 'Players', icon: Users },
-    { href: '/admin/print-cards', label: 'Print Cards', icon: Printer },
+    { href: '/volunteer/scan', label: 'Scan & Register', icon: QrCode },
+    { href: '/volunteer/round', label: 'Update Rounds', icon: RefreshCw },
   ]
 
   return (
@@ -53,13 +51,13 @@ export function AdminSidebar() {
         <div className={`p-6 border-b border-border flex items-center justify-between ${isCollapsed ? 'px-4' : ''}`}>
           {!isCollapsed && (
             <div className="animate-in fade-in duration-300">
-              <h2 className="text-lg font-bold tracking-tight text-foreground">Paradox Admin</h2>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Management</p>
+              <h2 className="text-lg font-bold tracking-tight text-foreground">Crew Portal</h2>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Field Console</p>
             </div>
           )}
           {isCollapsed && (
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-xl">
-              P
+              C
             </div>
           )}
           <button 
@@ -72,21 +70,20 @@ export function AdminSidebar() {
 
         <nav className="flex-1 py-6 px-3 space-y-1">
           {links.map((link) => {
-            const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`) && link.href !== '/admin'
-            const exactActive = link.href === '/admin' ? pathname === '/admin' : isActive
+            const isActive = pathname === link.href
             const Icon = link.icon
             return (
               <Link
                 key={link.href}
                 href={link.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group ${
-                  exactActive 
+                  isActive 
                     ? 'bg-primary text-white shadow-sm shadow-primary/20' 
                     : 'text-muted-foreground hover:bg-surface-2 hover:text-foreground'
                 } ${isCollapsed ? 'justify-center px-0' : ''}`}
                 title={isCollapsed ? link.label : ''}
               >
-                <Icon className={`w-5 h-5 flex-shrink-0 transition-transform ${exactActive ? '' : 'group-hover:scale-110'}`} />
+                <Icon className={`w-5 h-5 flex-shrink-0 transition-transform ${isActive ? '' : 'group-hover:scale-110'}`} />
                 {!isCollapsed && <span className="animate-in fade-in slide-in-from-left-2 duration-300">{link.label}</span>}
               </Link>
             )
@@ -95,7 +92,7 @@ export function AdminSidebar() {
 
         <div className="p-4 border-t border-border">
           <button
-            onClick={() => signOut({ callbackUrl: '/' })}
+            onClick={() => signOut({ callbackUrl: '/volunteer/login' })}
             className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-all ${isCollapsed ? 'justify-center px-0' : ''}`}
             title={isCollapsed ? 'Sign Out' : ''}
           >
