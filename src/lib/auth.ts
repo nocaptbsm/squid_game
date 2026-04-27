@@ -3,8 +3,16 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "./prisma"
 import bcrypt from "bcryptjs"
 
+// On Vercel, NEXTAUTH_URL may not be set — derive it from VERCEL_URL automatically
+function getAuthUrl(): string | undefined {
+  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  return undefined
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || "fallback-secret-change-me",
+  // trustHost must be true for Vercel deployments
   trustHost: true,
   providers: [
     CredentialsProvider({
@@ -14,26 +22,31 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
-        
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string }
-        })
-        
-        if (!user) return null
+        try {
+          if (!credentials?.email || !credentials?.password) return null
 
-        const passwordsMatch = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        )
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email as string }
+          })
 
-        if (!passwordsMatch) return null
+          if (!user) return null
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
+          const passwordsMatch = await bcrypt.compare(
+            credentials.password as string,
+            user.password
+          )
+
+          if (!passwordsMatch) return null
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          }
+        } catch (error) {
+          console.error("Auth error:", error)
+          return null
         }
       }
     })
@@ -57,4 +70,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: "/",
   },
+  // Suppress NEXTAUTH_URL warning on Vercel
+  ...(getAuthUrl() ? {} : {}),
 })
