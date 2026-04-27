@@ -5,26 +5,53 @@ import { Volume2, VolumeX } from 'lucide-react'
 
 export function SquidHorrorTheme() {
   const [isMuted, setIsMuted] = useState(true)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const ambientRef = useRef<HTMLAudioElement | null>(null)
+  const clickRef = useRef<HTMLAudioElement | null>(null)
+  const whisperRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
-    // Create ambient audio
-    const audio = new Audio('https://res.cloudinary.com/dcu6p6m1o/video/upload/v1714241234/horror_drone.mp3') // Placeholder, I'll need a real URL or use a synthesized hum
-    audio.loop = true
-    audio.volume = 0.2
-    audioRef.current = audio
+    // Ambient drone - Using your local file
+    ambientRef.current = new Audio('/audio/mingle_squid_game.mp3')
+    ambientRef.current.loop = true
+    ambientRef.current.volume = 0.25
+
+    // Interaction click
+    clickRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3') // Soft mechanical click
+    clickRef.current.volume = 0.1
+
+    // Rare whisper
+    whisperRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2544/2544-preview.mp3') // Eerie whisper placeholder
+    whisperRef.current.volume = 0.05
+
+    // Global hover sound listener
+    const handleHover = (e: MouseEvent) => {
+      if (!isMuted && (e.target as HTMLElement).closest('a, button')) {
+        clickRef.current?.play().catch(() => {})
+      }
+    }
+
+    document.addEventListener('mouseover', handleHover)
+
+    // Random whisper trigger
+    const whisperInterval = setInterval(() => {
+      if (!isMuted && Math.random() > 0.95) {
+        whisperRef.current?.play().catch(() => {})
+      }
+    }, 15000)
 
     return () => {
-      audio.pause()
+      ambientRef.current?.pause()
+      document.removeEventListener('mouseover', handleHover)
+      clearInterval(whisperInterval)
     }
-  }, [])
+  }, [isMuted])
 
   const toggleMute = () => {
-    if (audioRef.current) {
+    if (ambientRef.current) {
       if (isMuted) {
-        audioRef.current.play().catch(() => {})
+        ambientRef.current.play().catch(() => {})
       } else {
-        audioRef.current.pause()
+        ambientRef.current.pause()
       }
     }
     setIsMuted(!isMuted)
