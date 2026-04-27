@@ -4,13 +4,6 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { LogOut, RefreshCw } from 'lucide-react'
 import { ROUND_ORDER, ROUND_LABELS } from '@/lib/constants'
-import { motion, AnimatePresence } from 'framer-motion'
-
-const statusMap: Record<string, { label: string; cls: string }> = {
-  SURVIVED: { label: 'SURVIVED', cls: 'badge-green' },
-  ELIMINATED: { label: 'ELIMINATED', cls: 'badge-red' },
-  PENDING: { label: 'PENDING', cls: 'badge-gray' },
-}
 
 export default function PlayerView({ params }: { params: { playerNumber: string } }) {
   const [player, setPlayer] = useState<any>(null)
@@ -23,7 +16,7 @@ export default function PlayerView({ params }: { params: { playerNumber: string 
     try {
       const res = await fetch(`/api/players/${params.playerNumber}`)
       if (res.status === 401) { router.push('/player/login'); return }
-      if (!res.ok) throw new Error('FAILED TO RETRIEVE STATUS')
+      if (!res.ok) throw new Error('Failed to retrieve status')
       const data = await res.json()
       setPlayer(data)
       setLastUpdated(new Date())
@@ -46,30 +39,20 @@ export default function PlayerView({ params }: { params: { playerNumber: string 
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-[#3a1c1e] flex flex-col items-center justify-center">
-      <div className="text-center">
-        <div className="w-10 h-10 border border-red-800 border-t-transparent rounded-full animate-spin mx-auto mb-5" />
-        <p className="text-[10px] tracking-[0.5em] text-red-900 uppercase animate-pulse" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
-          RETRIEVING YOUR FATE...
-        </p>
-        <svg viewBox="0 0 300 40" className="w-48 h-8 mt-4 opacity-20 mx-auto">
-          <polyline
-            points="0,20 30,20 40,20 48,5 56,35 64,8 72,20 110,20 120,20 128,20 136,6 144,34 152,8 160,20 200,20"
-            stroke="#cc0000" strokeWidth="1.5" fill="none"
-            strokeDasharray="500" strokeDashoffset="500"
-            style={{ animation: 'ekg 2s ease-in-out infinite' }}
-          />
-        </svg>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center gap-4 text-muted-foreground">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm font-medium">Loading player data...</p>
       </div>
     </div>
   )
 
   if (error || !player) return (
-    <div className="min-h-screen bg-[#3a1c1e] flex flex-col items-center justify-center p-4 gap-4">
-      <p className="text-[11px] tracking-widest text-red-500 border border-red-900/40 bg-red-950/20 px-6 py-3 uppercase" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
-        ⚠ {error || 'PLAYER NOT FOUND'}
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 gap-4">
+      <p className="text-sm font-medium text-red-600 bg-red-50 border border-red-200 px-6 py-3 rounded-lg">
+        {error || 'Player not found'}
       </p>
-      <button onClick={handleLogout} className="h-btn-ghost text-[11px]">← BACK</button>
+      <button onClick={handleLogout} className="h-btn-ghost">← Back to login</button>
     </div>
   )
 
@@ -77,118 +60,91 @@ export default function PlayerView({ params }: { params: { playerNumber: string 
   const survivedCount = player.rounds?.filter((r: any) => r.status === 'SURVIVED').length ?? 0
 
   return (
-    <div className="min-h-screen bg-[#3a1c1e] flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Nav */}
-      <header className="h-14 border-b border-red-900/20 bg-[#441f21]/80 flex items-center justify-between px-4 lg:px-8 relative">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-red-900/40" style={{ boxShadow: '0 0 8px rgba(139,0,0,0.4)' }} />
+      <header className="h-16 border-b border-border bg-surface flex items-center justify-between px-4 lg:px-8">
         <div className="flex items-center gap-2">
-          <span className="text-red-800 text-sm flicker" style={{ fontFamily: 'Special Elite, cursive' }}>PARADOX</span>
-          <span className="text-[#a88080] text-[9px] tracking-widest uppercase" style={{ fontFamily: 'Share Tech Mono, monospace' }}>2025</span>
+          <span className="font-bold text-foreground tracking-tight">Paradox</span>
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-surface-2 px-2 py-0.5 rounded">Player Portal</span>
         </div>
-        <button onClick={handleLogout} className="flex items-center gap-1.5 text-[10px] tracking-widest text-[#d4b8b8] hover:text-red-700 uppercase transition-colors" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
-          <LogOut className="w-4 h-4" /> EXIT
+        <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-red-600 transition-colors">
+          <LogOut className="w-4 h-4" /> Sign Out
         </button>
       </header>
 
-      <main className="flex-1 max-w-sm mx-auto w-full px-4 py-8 space-y-5">
+      <main className="flex-1 max-w-md mx-auto w-full px-4 py-8 space-y-6">
         {/* Status banner */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className={`h-card blood-border-top p-5 flex items-center justify-between ${isEliminated ? 'border-red-900/50' : 'border-green-900/30'}`}
-          style={isEliminated ? { boxShadow: '0 0 30px rgba(100,0,0,0.2)' } : { boxShadow: '0 0 20px rgba(0,60,0,0.15)' }}
-        >
+        <div className={`h-card p-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left ${isEliminated ? 'border-red-200 bg-red-50/50' : 'border-green-200 bg-green-50/50'}`}>
           <div>
-            <p className="text-[9px] tracking-[0.4em] text-[#d4b8b8] uppercase mb-1" style={{ fontFamily: 'Share Tech Mono, monospace' }}>YOUR STATUS</p>
-            <p
-              className={`text-2xl flicker ${isEliminated ? '' : ''}`}
-              style={{
-                fontFamily: 'Special Elite, cursive',
-                color: isEliminated ? '#cc3333' : '#4caf50',
-                textShadow: isEliminated ? '0 0 20px rgba(180,0,0,0.5)' : '0 0 15px rgba(0,160,0,0.4)',
-              }}
-            >
-              {isEliminated ? 'ELIMINATED' : 'SURVIVING'}
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Current Status</p>
+            <p className={`text-3xl font-bold tracking-tight ${isEliminated ? 'text-red-600' : 'text-green-600'}`}>
+              {isEliminated ? 'Eliminated' : 'Surviving'}
             </p>
           </div>
-          <div
-            className="text-5xl"
-            style={{
-              fontFamily: 'Share Tech Mono, monospace',
-              color: isEliminated ? '#cc3333' : '#2d7d2d',
-              opacity: 0.4,
-            }}
-          >
-            {isEliminated ? '✗' : '□'}
-          </div>
-        </motion.div>
+        </div>
 
         {/* Player card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="h-card blood-border-top p-5 space-y-5"
-        >
+        <div className="h-card p-6 space-y-6">
           {/* Photo + info */}
           <div className="flex items-center gap-4">
-            <div className={`w-16 h-16 border overflow-hidden flex-shrink-0 ${isEliminated ? 'border-red-900/50 grayscale contrast-75' : 'border-red-900/30'}`}>
+            <div className={`w-16 h-16 rounded-full overflow-hidden flex-shrink-0 bg-surface-2 ${isEliminated ? 'opacity-50 grayscale' : ''}`}>
               {player.photoUrl
                 ? <img src={player.photoUrl} className="w-full h-full object-cover" alt="" />
-                : <div className="w-full h-full bg-red-950/20 flex items-center justify-center text-3xl font-bold text-[#d4b8b8]">
-                    {player.name?.[0]?.toUpperCase() || '?'}
+                : <div className="w-full h-full flex items-center justify-center text-xl font-medium text-muted-foreground">
+                    {player.name?.[0]?.toUpperCase() || player.playerNumber.substring(0, 2)}
                   </div>
               }
             </div>
             <div>
-              <h2 className={`text-base ${isEliminated ? 'line-through text-[#d4b8b8]' : 'text-[#c8bfbf]'}`} style={{ fontFamily: 'Special Elite, cursive' }}>
-                {player.name || 'UNKNOWN'}
+              <h2 className={`text-xl font-semibold ${isEliminated ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                {player.name || 'Unknown Player'}
               </h2>
-              <p className="text-[10px] text-[#d4b8b8] mt-0.5" style={{ fontFamily: 'Share Tech Mono, monospace' }}>PLAYER #{player.playerNumber}</p>
-              <p className="text-[10px] text-[#d4b8b8] mt-0.5" style={{ fontFamily: 'Share Tech Mono, monospace' }}>{survivedCount}/7 ROUNDS</p>
+              <p className="text-sm text-muted-foreground font-mono mt-0.5">ID: {player.playerNumber}</p>
             </div>
           </div>
 
-          {/* Progress bar */}
-          <div className="h-1 bg-red-950/30 overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${(survivedCount / 7) * 100}%` }}
-              transition={{ duration: 1.2, delay: 0.4 }}
-              className="h-full bg-red-800"
-              style={{ boxShadow: '0 0 6px rgba(139,0,0,0.6)' }}
-            />
+          {/* Progress */}
+          <div>
+            <div className="flex justify-between text-sm font-medium mb-2">
+              <span className="text-muted-foreground">Progress</span>
+              <span className="text-foreground">{survivedCount} / 7 Rounds</span>
+            </div>
+            <div className="h-2 w-full bg-surface-2 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-1000 ease-out rounded-full" 
+                style={{ width: `${(survivedCount / 7) * 100}%` }}
+              />
+            </div>
           </div>
 
           {/* Rounds list */}
-          <div className="space-y-1.5">
-            {ROUND_ORDER.map((roundName, i) => {
+          <div className="space-y-3 pt-4 border-t border-border">
+            <h3 className="text-sm font-semibold text-foreground mb-4">Round History</h3>
+            {ROUND_ORDER.map((roundName) => {
               const r = player.rounds?.find((r: any) => r.round === roundName)
               const status = r?.status || 'PENDING'
-              const cfg = statusMap[status]
+              
+              let badge = <span className="badge-gray">Pending</span>
+              if (status === 'SURVIVED') badge = <span className="badge-green">Pass</span>
+              if (status === 'ELIMINATED') badge = <span className="badge-red">Fail</span>
+
               return (
-                <motion.div
-                  key={roundName}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + i * 0.07 }}
-                  className="flex items-center justify-between py-2 border-b border-red-900/10 last:border-0"
-                >
-                  <span className="text-[11px] text-[#7a6e6e] tracking-widest uppercase" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
+                <div key={roundName} className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-muted-foreground">
                     {ROUND_LABELS[roundName as keyof typeof ROUND_LABELS]}
                   </span>
-                  <span className={cfg.cls}>{cfg.label}</span>
-                </motion.div>
+                  {badge}
+                </div>
               )
             })}
           </div>
-        </motion.div>
+        </div>
 
         {/* Auto-refresh */}
-        <div className="flex items-center justify-center gap-2 text-[9px] text-[#a88080] uppercase tracking-widest" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
+        <div className="flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground">
           <RefreshCw className="w-3 h-3" />
-          AUTO-REFRESHES EVERY 30 SECONDS
-          {lastUpdated && <span>· {lastUpdated.toLocaleTimeString()}</span>}
+          Auto-refreshes every 30s
+          {lastUpdated && <span>· {lastUpdated.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>}
         </div>
       </main>
     </div>

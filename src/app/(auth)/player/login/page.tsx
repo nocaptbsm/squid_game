@@ -1,134 +1,97 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { startHeartbeatLoop, playError, playSuccess, playStatic } from '@/lib/horror-audio'
 
 export default function PlayerLogin() {
   const [playerNumber, setPlayerNumber] = useState('')
   const [pin, setPin] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const [shake, setShake] = useState(false)
   const router = useRouter()
-
-  useEffect(() => {
-    setTimeout(() => setMounted(true), 100)
-    const stop = startHeartbeatLoop(68)
-    const stopTimer = setTimeout(stop, 2500)
-    return () => { stop(); clearTimeout(stopTimer) }
-  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
-    playStatic(0.1, 0.25)
-    const formattedPlayerNumber = playerNumber.padStart(3, '0')
     try {
+      const formattedNumber = playerNumber.padStart(3, '0')
       const res = await fetch('/api/player/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerNumber: formattedPlayerNumber, pin })
+        body: JSON.stringify({ playerNumber: formattedNumber, pin })
       })
-      if (res.ok) {
-        playSuccess()
-        router.push(`/player/${formattedPlayerNumber}`)
+
+      if (!res.ok) {
+        setError('Invalid player number or PIN')
       } else {
-        const data = await res.json()
-        playError()
-        setShake(true)
-        setTimeout(() => setShake(false), 500)
-        setError(data.error || 'PLAYER NOT FOUND IN THE SYSTEM.')
+        router.push(`/player/${formattedNumber}`)
       }
     } catch {
-      playError()
-      setError('CONNECTION SEVERED.')
+      setError('System error. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#3a1c1e] flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute bottom-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-green-950/6 rounded-full blur-3xl" />
-      </div>
-
-      <Link href="/" className="absolute top-4 left-4 text-[10px] tracking-[0.3em] text-[#d4b8b8] hover:text-red-700 uppercase transition-colors" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
-        ← BACK
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+      <Link href="/" className="absolute top-6 left-6 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        ← Back to portals
       </Link>
 
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={mounted ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, ease: 'easeOut' }}
-        className="w-full max-w-sm"
-      >
+      <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <motion.div
-            animate={{ scale: [1, 1.06, 1, 1.04, 1] }}
-            transition={{ repeat: Infinity, duration: 1.1, ease: 'easeInOut' }}
-            className="text-6xl mb-4 inline-block"
-            style={{ color: '#2d7d2d', textShadow: '0 0 25px rgba(40,120,40,0.5)', fontFamily: 'Share Tech Mono, monospace' }}
-          >
-            □
-          </motion.div>
-          <h1 className="text-2xl text-[#ede5e5] tracking-[0.2em]" style={{ fontFamily: 'Special Elite, cursive' }}>PLAYER STATUS</h1>
-          <p className="text-[10px] tracking-[0.4em] text-[#b09090] uppercase mt-2" style={{ fontFamily: 'Share Tech Mono, monospace' }}>KNOW YOUR FATE</p>
+          <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Player Portal</h1>
+          <p className="text-sm text-muted-foreground mt-1">Enter your player credentials</p>
         </div>
 
-        <motion.div
-          animate={shake ? { x: [-6, 6, -6, 6, 0] } : {}}
-          transition={{ duration: 0.4 }}
-          className="h-card blood-border-top p-8"
-        >
-          <form onSubmit={handleLogin} className="space-y-5">
+        <div className="h-card p-6">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="h-label">PLAYER NUMBER</label>
-              <input
-                type="text" value={playerNumber} onChange={e => setPlayerNumber(e.target.value)}
-                className="h-input text-center text-2xl tracking-[0.5em]"
-                required placeholder="001" maxLength={3}
+              <label className="h-label">Player Number</label>
+              <input 
+                type="text" 
+                value={playerNumber} 
+                onChange={e => setPlayerNumber(e.target.value.replace(/\D/g, '').slice(0, 3))} 
+                className="h-input" 
+                required 
+                placeholder="001" 
               />
             </div>
             <div>
-              <label className="h-label">SECRET PIN</label>
-              <input
-                type="password" value={pin} onChange={e => setPin(e.target.value)}
-                className="h-input text-center text-2xl tracking-[0.5em]"
-                required maxLength={4} placeholder="••••"
+              <label className="h-label">Access PIN</label>
+              <input 
+                type="password" 
+                value={pin} 
+                onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))} 
+                className="h-input" 
+                required 
+                placeholder="••••" 
               />
-              <p className="text-[10px] text-[#b09090] mt-2 tracking-wider" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
-                PIN = your 4-digit player number (e.g. player 42 → PIN 0042)
+              <p className="text-xs text-muted-foreground mt-1.5">
+                4-digit PIN is your padded player number (e.g., player 042 uses 0042).
               </p>
             </div>
 
             {error && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="border border-red-900/50 bg-red-950/30 text-red-500 text-[11px] px-4 py-3 tracking-widest uppercase"
-                style={{ fontFamily: 'Share Tech Mono, monospace' }}
-              >
-                ⚠ {error}
-              </motion.div>
+              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
+                {error}
+              </div>
             )}
 
-            <button type="submit" disabled={loading} className="h-btn w-full mt-2">
-              {loading ? (
-                <span className="flex items-center justify-center gap-3">
-                  <span className="inline-block w-3 h-3 border border-red-500 border-t-transparent rounded-full animate-spin" />
-                  SEARCHING RECORDS...
-                </span>
-              ) : 'REVEAL MY FATE →'}
+            <button type="submit" disabled={loading} className="h-btn w-full mt-2 !bg-orange-500 hover:!bg-orange-600">
+              {loading ? 'Authenticating...' : 'Sign in'}
             </button>
           </form>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </div>
   )
 }

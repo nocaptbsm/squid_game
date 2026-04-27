@@ -1,11 +1,15 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { RoundBadge } from '@/components/squid/RoundBadge'
 import { ROUND_ORDER, ROUND_LABELS } from '@/lib/constants'
-import { GlowButton } from '@/components/ui/GlowButton'
 import { Download } from 'lucide-react'
-import { GlassCard } from '@/components/ui/GlassCard'
+
+// Inline RoundBadge for minimal UI to avoid horror styling dependencies
+function CleanRoundBadge({ status }: { status: string }) {
+  if (status === 'SURVIVED') return <span className="badge-green">Pass</span>
+  if (status === 'ELIMINATED') return <span className="badge-red">Fail</span>
+  return <span className="badge-gray">Pending</span>
+}
 
 export default function RoundsMatrix() {
   const [players, setPlayers] = useState<any[]>([])
@@ -46,26 +50,26 @@ export default function RoundsMatrix() {
   }
 
   return (
-    <div className="space-y-8 relative z-10">
+    <div className="space-y-6 max-w-7xl">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-heading font-black uppercase tracking-widest text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
             Rounds Matrix
           </h1>
-          <p className="text-npTextSecondary text-sm uppercase tracking-widest mt-1">Full Progression Overview</p>
+          <p className="text-sm text-muted-foreground mt-2">Full progression overview for all participants.</p>
         </div>
-        <GlowButton variant="secondary" onClick={exportCSV} disabled={loading || players.length === 0} className="px-6 py-3">
+        <button onClick={exportCSV} disabled={loading || players.length === 0} className="h-btn-ghost flex items-center gap-2">
           <Download className="w-4 h-4" /> Export CSV
-        </GlowButton>
+        </button>
       </div>
 
-      <GlassCard className="overflow-hidden overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[1000px]">
+      <div className="h-card overflow-hidden overflow-x-auto">
+        <table className="w-full text-left border-collapse min-w-[1000px] text-sm">
           <thead>
-            <tr className="bg-white/[0.02] border-b border-white/10 text-[10px] uppercase tracking-widest text-npTextMuted">
-              <th className="p-4 font-bold sticky left-0 bg-[#0c0822] z-10 w-24 shadow-[4px_0_10px_rgba(0,0,0,0.3)]">#</th>
+            <tr className="bg-surface-2 border-b border-border">
+              <th className="p-4 font-semibold text-muted-foreground sticky left-0 bg-surface-2 z-10 w-24 border-r border-border shadow-[2px_0_5px_rgba(0,0,0,0.02)]">ID</th>
               {ROUND_ORDER.map(r => (
-                <th key={r} className="p-4 font-bold text-center">
+                <th key={r} className="p-4 font-semibold text-muted-foreground text-center">
                   <div className="rotate-[-45deg] whitespace-nowrap -ml-4 mt-4 h-24 flex items-end justify-start translate-y-4 translate-x-4">
                     {ROUND_LABELS[r]}
                   </div>
@@ -73,24 +77,24 @@ export default function RoundsMatrix() {
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5">
+          <tbody className="divide-y divide-border bg-surface">
             {loading ? (
               <tr>
-                <td colSpan={ROUND_ORDER.length + 1} className="p-8 text-center text-npTextMuted font-bold uppercase tracking-widest text-sm">
-                  <div className="w-6 h-6 border-2 border-npTeal border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                <td colSpan={ROUND_ORDER.length + 1} className="p-8 text-center text-sm text-muted-foreground font-medium">
+                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                   Loading Matrix...
                 </td>
               </tr>
             ) : players.map(player => (
-              <tr key={player.id} className="hover:bg-white/[0.04] transition-colors group">
-                <td className="p-4 sticky left-0 bg-[#0c0822] group-hover:bg-[#120c33] font-mono font-bold text-npPink border-r border-white/10 shadow-[4px_0_10px_rgba(0,0,0,0.3)] transition-colors">
+              <tr key={player.id} className="hover:bg-surface-2 transition-colors group">
+                <td className="p-4 sticky left-0 bg-surface group-hover:bg-surface-2 font-mono font-medium text-foreground border-r border-border shadow-[2px_0_5px_rgba(0,0,0,0.02)] transition-colors">
                   {player.playerNumber}
                 </td>
                 {ROUND_ORDER.map(roundName => {
                   const status = player.rounds.find((r: any) => r.round === roundName)?.status || 'PENDING'
                   return (
-                    <td key={roundName} className="p-4 text-center border-r border-white/[0.02]">
-                      <RoundBadge status={status} />
+                    <td key={roundName} className="p-4 text-center border-r border-border/50">
+                      <CleanRoundBadge status={status} />
                     </td>
                   )
                 })}
@@ -98,7 +102,7 @@ export default function RoundsMatrix() {
             ))}
           </tbody>
         </table>
-      </GlassCard>
+      </div>
     </div>
   )
 }

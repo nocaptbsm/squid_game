@@ -2,502 +2,217 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Creepster&family=Share+Tech+Mono&display=swap');
+@layer base {
+  :root {
+    --background: 210 40% 98%; /* #F8FAFC */
+    --foreground: 222 47% 11%; /* #0F172A */
+    
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    
+    --primary: 221 83% 53%; /* Blue 500 */
+    --primary-foreground: 210 40% 98%;
+    
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11.2%;
+    
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222 47% 11.2%;
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-:root {
-  /* ── Background layers +50% brightness ── */
-  --h-bg: #3a1c1e;          /* dark blood-red — clearly visible, still horror */
-  --h-bg2: #441f21;
-  --h-surface: #522828;     /* cards pop clearly above bg */
-  --h-surface2: #5e3030;    /* nested surfaces */
-  --h-border: rgba(240, 60, 60, 0.70);
-  --h-border-bright: rgba(255, 80, 80, 0.95);
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221 83% 53%;
 
-  /* ── Blood Red ── */
-  --h-red: #ff2020;
-  --h-red-bright: #ff5555;
-  --h-red-dim: #d41010;
-  --h-red-glow: rgba(255, 32, 32, 0.75);
+    --radius: 0.75rem; /* 12px */
 
-  /* ── Accents ── */
-  --h-green: #285a28;
-  --h-green-bright: #55dd55;
-  --h-amber: #c09028;
-  --h-amber-bright: #f0cc38;
+    /* Legacy variables mapping for smooth transition without breaking everything immediately */
+    --s-bg: #F8FAFC;
+    --s-surface: #FFFFFF;
+    --s-surface-2: #F1F5F9;
+    --s-border: #E2E8F0;
+    --s-accent: #3B82F6;
+    --s-accent-hover: #2563EB;
+    --s-accent-light: #EFF6FF;
+    --s-text: #0F172A;
+    --s-text-secondary: #475569;
+    --s-text-muted: #94A3B8;
+    --s-green: #10B981;
+    --s-green-light: #ECFDF5;
+    --s-orange: #F59E0B;
+    --s-orange-light: #FFFBEB;
+    --s-red: #EF4444;
+    --s-red-light: #FEF2F2;
 
-  /* ── Text ── */
-  --h-text: #faf0f0;        /* near-pure white */
-  --h-text-dim: #d4b8b8;    /* clearly readable secondary */
-  --h-text-muted: #a88080;  /* muted but visible */
-  --h-white: #ffffff;
-
-  /* ── Glow / Shadow ── */
-  --h-shadow: 0 4px 30px rgba(0,0,0,0.70), 0 2px 10px rgba(0,0,0,0.60);
-  --h-red-shadow: 0 0 22px rgba(255,32,32,0.90), 0 0 60px rgba(220,0,0,0.50), 0 0 5px rgba(255,120,120,0.80);
-
-  /* Legacy compat */
-  --np-pink: var(--h-red-bright);
-  --np-teal: var(--h-green-bright);
-  --np-gold: var(--h-amber-bright);
-  --np-coral: var(--h-red-bright);
-  --np-text: var(--h-text);
-  --np-text-secondary: var(--h-text-dim);
-  --np-text-muted: var(--h-text-muted);
-  --np-glass: var(--h-surface);
-  --np-glass-border: var(--h-border);
-  --np-pink-glow: var(--h-red-glow);
-  --np-teal-glow: rgba(85,221,85,0.45);
-  --np-gold-glow: rgba(240,204,56,0.45);
-
-  --s-bg: var(--h-bg);
-  --s-surface: var(--h-surface);
-  --s-surface-2: var(--h-surface2);
-  --s-border: var(--h-border);
-  --s-accent: var(--h-red);
-  --s-accent-hover: var(--h-red-bright);
-  --s-accent-light: rgba(220,20,20,0.30);
-  --s-accent-border: rgba(220,20,20,0.70);
-  --s-text: var(--h-text);
-  --s-text-secondary: var(--h-text-dim);
-  --s-text-muted: var(--h-text-muted);
-  --s-green: var(--h-green-bright);
-  --s-green-light: rgba(70,180,70,0.28);
-  --s-green-border: rgba(85,220,85,0.65);
-  --s-orange: var(--h-red);
-  --s-orange-light: rgba(220,20,20,0.25);
-  --s-orange-border: rgba(220,20,20,0.65);
-  --s-red: var(--h-red-bright);
-  --s-red-light: rgba(255,32,32,0.25);
-  --s-red-border: rgba(255,32,32,0.65);
-
-  --background: var(--h-bg);
-  --foreground: var(--h-text);
-  --border: var(--h-border);
-  --ring: var(--h-red);
-}
-
-* { box-sizing: border-box; }
-
-/* Scanlines — subtle, doesn't fight brightness */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0px,
-    transparent 3px,
-    rgba(0,0,0,0.08) 3px,
-    rgba(0,0,0,0.08) 4px
-  );
-}
-
-/* Vignette — light edge darkening only */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9998;
-  background:
-    radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.30) 85%, rgba(0,0,0,0.50) 100%);
-}
-
-body {
-  background: var(--h-bg);
-  background-image:
-    radial-gradient(ellipse at top left,    rgba(180,30,30,0.25) 0%, transparent 55%),
-    radial-gradient(ellipse at bottom right, rgba(140,20,20,0.20) 0%, transparent 55%);
-  background-attachment: fixed;
-  min-height: 100vh;
-  color: var(--h-text);
-  font-family: 'Share Tech Mono', monospace;
-  -webkit-font-smoothing: antialiased;
+    --s-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --s-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --s-shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+  }
 }
 
 @layer base {
-  * { @apply border-border; }
-  body { @apply bg-background text-foreground; }
-  html { @apply font-mono; }
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
 }
 
-/* ─── HORROR UTILITY CLASSES ─── */
+/* Minimal utility classes replacing the horror ones */
 @layer utilities {
   .text-balance { text-wrap: balance; }
 
-  /* Horror Card — visible surface lift above pure-black bg */
-  .h-card {
-    background: var(--h-surface);
-    border: 1px solid var(--h-border);
-    border-radius: 4px;
-    box-shadow:
-      var(--h-shadow),
-      inset 0 1px 0 rgba(255,255,255,0.04),
-      0 0 0 0.5px rgba(200,0,0,0.15);   /* subtle outer red ring */
+  .h-card, .saas-card {
+    background: var(--s-surface);
+    border: 1px solid var(--s-border);
+    border-radius: var(--radius);
+    box-shadow: var(--s-shadow-sm);
     position: relative;
     overflow: hidden;
+    transition: box-shadow 0.2s ease;
   }
-  /* Bright top accent line — the main visual cue that a card exists */
-  .h-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent 0%, #b00000 30%, #e80000 50%, #b00000 70%, transparent 100%);
-    opacity: 0.9;
-    animation: blood-pulse 3s ease-in-out infinite;
+  
+  .h-card:hover, .saas-card:hover {
+    box-shadow: var(--s-shadow);
   }
 
-  /* Horror Input — visible at all brightness levels */
-  .h-input {
-    background: #100808;           /* slightly lighter than surface */
-    border: 1px solid rgba(200,30,30,0.6);   /* vivid red border */
-    border-radius: 2px;
-    color: var(--h-text);
-    transition: border-color 0.2s, box-shadow 0.2s;
+  .h-input, .saas-input {
+    background: var(--s-surface);
+    border: 1px solid var(--s-border);
+    border-radius: calc(var(--radius) - 4px);
+    color: var(--s-text);
+    transition: all 0.2s ease;
     width: 100%;
-    padding: 10px 14px;
-    font-size: 13px;
-    font-family: 'Share Tech Mono', monospace;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
     outline: none;
   }
-  .h-input:focus {
-    border-color: var(--h-red-bright);
-    box-shadow: 0 0 0 2px rgba(232,0,0,0.25), 0 0 20px rgba(232,0,0,0.15);
+  
+  .h-input:focus, .saas-input:focus {
+    border-color: var(--s-accent);
+    box-shadow: 0 0 0 3px var(--s-accent-light);
   }
-  .h-input::placeholder { color: var(--h-text-muted); }
 
-  /* ── PRIMARY BUTTON — always visible, bold red ── */
-  .h-btn {
-    background: #c00000;          /* solid vivid red — visible at any brightness */
+  .h-btn, .saas-btn-primary {
+    background: var(--s-accent);
     color: #ffffff;
-    border: 1px solid #ff3333;    /* bright red border — clear edge */
-    border-radius: 3px;
-    font-family: 'Share Tech Mono', monospace;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    padding: 12px 28px;
-    transition: all 0.18s ease;
+    border: none;
+    border-radius: calc(var(--radius) - 4px);
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+    transition: all 0.2s ease;
     cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    /* permanent subtle glow so it's always findable at low brightness */
-    box-shadow:
-      0 0 12px rgba(200,0,0,0.5),
-      0 2px 8px rgba(0,0,0,0.8),
-      inset 0 1px 0 rgba(255,120,120,0.2);
+    box-shadow: var(--s-shadow-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
-  /* Sheen highlight */
-  .h-btn::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 50%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 100%);
-    pointer-events: none;
-  }
-  .h-btn:hover:not(:disabled) {
-    background: #e00000;
-    box-shadow:
-      0 0 25px rgba(232,0,0,0.85),
-      0 0 60px rgba(200,0,0,0.4),
-      0 2px 8px rgba(0,0,0,0.9),
-      inset 0 1px 0 rgba(255,150,150,0.25);
+  
+  .h-btn:hover:not(:disabled), .saas-btn-primary:hover:not(:disabled) {
+    background: var(--s-accent-hover);
     transform: translateY(-1px);
+    box-shadow: var(--s-shadow);
   }
-  .h-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-  .h-btn:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 0 10px rgba(200,0,0,0.5); }
+  
+  .h-btn:disabled, .saas-btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 
-  /* ── GHOST BUTTON — visible border at all brightness levels ── */
-  .h-btn-ghost {
-    background: rgba(255,255,255,0.04);
-    color: var(--h-text-dim);
-    border: 1px solid rgba(200,180,180,0.35);  /* warm white border — always visible */
-    border-radius: 3px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 13px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 12px 28px;
-    transition: all 0.18s;
+  .h-btn-ghost, .saas-btn-ghost {
+    background: transparent;
+    color: var(--s-text-secondary);
+    border: 1px solid var(--s-border);
+    border-radius: calc(var(--radius) - 4px);
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+    transition: all 0.2s ease;
     cursor: pointer;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
+  
   .h-btn-ghost:hover {
-    border-color: rgba(255,100,100,0.6);
-    color: var(--h-text);
-    background: rgba(200,0,0,0.08);
-    box-shadow: 0 0 12px rgba(200,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+    background: var(--s-surface-2);
+    color: var(--s-text);
+    border-color: var(--s-text-muted);
   }
 
-  /* ── DANGER BUTTON ── */
   .h-btn-danger {
-    background: #700000;
-    color: #ff8080;
-    border: 1px solid rgba(220,30,30,0.7);
-    border-radius: 3px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 13px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 12px 28px;
-    transition: all 0.2s;
+    background: var(--s-red-light);
+    color: var(--s-red);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: calc(var(--radius) - 4px);
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+    transition: all 0.2s ease;
     cursor: pointer;
-    box-shadow: 0 0 8px rgba(160,0,0,0.4);
   }
+  
   .h-btn-danger:hover {
-    background: #960000;
-    box-shadow: 0 0 20px rgba(200,0,0,0.55);
-    color: #ffb0b0;
+    background: var(--s-red);
+    color: #ffffff;
   }
 
-  /* Label — bright enough to read at low brightness */
-  .h-label {
+  .h-label, .saas-label {
     display: block;
-    font-size: 11px;
-    font-family: 'Share Tech Mono', monospace;
-    color: #907878;      /* brighter than --h-text-muted */
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-bottom: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--s-text-secondary);
+    margin-bottom: 0.375rem;
   }
 
-  /* ── STATUS BADGES — vivid text for all brightness levels ── */
   .badge-green {
     display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(30,100,30,0.4);
-    color: #6edf6e;                     /* bright green text */
-    border: 1px solid rgba(80,180,80,0.6);
-    border-radius: 2px;
-    font-size: 10px; font-family: 'Share Tech Mono', monospace;
-    letter-spacing: 0.15em; text-transform: uppercase;
-    padding: 2px 8px;
+    background: var(--s-green-light);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 9999px;
+    font-size: 0.75rem; font-weight: 500;
+    padding: 0.125rem 0.625rem;
   }
+  
   .badge-orange {
     display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(160,0,0,0.35);
-    color: #ff6666;                     /* bright warm red text */
-    border: 1px solid rgba(220,30,30,0.65);
-    border-radius: 2px;
-    font-size: 10px; font-family: 'Share Tech Mono', monospace;
-    letter-spacing: 0.15em; text-transform: uppercase;
-    padding: 2px 8px;
+    background: var(--s-orange-light);
+    color: #D97706;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 9999px;
+    font-size: 0.75rem; font-weight: 500;
+    padding: 0.125rem 0.625rem;
   }
+  
   .badge-red {
     display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(180,0,0,0.4);
-    color: #ff4444;                     /* vivid red */
-    border: 1px solid rgba(240,30,30,0.7);
-    border-radius: 2px;
-    font-size: 10px; font-family: 'Share Tech Mono', monospace;
-    letter-spacing: 0.15em; text-transform: uppercase;
-    padding: 2px 8px;
+    background: var(--s-red-light);
+    color: #DC2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 9999px;
+    font-size: 0.75rem; font-weight: 500;
+    padding: 0.125rem 0.625rem;
   }
+  
   .badge-gray {
     display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(255,255,255,0.03);
-    color: var(--h-text-muted);
-    border: 1px solid var(--h-border);
-    border-radius: 2px;
-    font-size: 10px; font-family: 'Share Tech Mono', monospace;
-    letter-spacing: 0.15em; text-transform: uppercase;
-    padding: 2px 8px;
+    background: var(--s-surface-2);
+    color: var(--s-text-secondary);
+    border: 1px solid var(--s-border);
+    border-radius: 9999px;
+    font-size: 0.75rem; font-weight: 500;
+    padding: 0.125rem 0.625rem;
   }
-
-  /* Glitch text effect */
-  .glitch {
-    position: relative;
-  }
-  .glitch::before, .glitch::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    background: transparent;
-  }
-  .glitch::before {
-    color: #ff0000;
-    animation: glitch-1 3s infinite steps(1);
-    clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
-  }
-  .glitch::after {
-    color: #00ffff;
-    animation: glitch-2 3s infinite steps(1);
-    clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
-    opacity: 0.4;
-  }
-
-  /* Flicker text */
-  .flicker {
-    animation: flicker 4s linear infinite;
-  }
-
-  /* Blood drip */
-  .blood-border-top {
-    position: relative;
-  }
-  .blood-border-top::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--h-red);
-    box-shadow: 0 0 12px var(--h-red-glow);
-    animation: blood-pulse 2s ease-in-out infinite;
-  }
-
-  /* Heartbeat pulse */
-  .heartbeat {
-    animation: heartbeat 1.2s ease-in-out infinite;
-  }
-
-  /* Saas compat */
-  .saas-card { @apply h-card; }
-  .saas-input { @apply h-input; }
-  .saas-btn-primary { @apply h-btn; width: 100%; display: flex; align-items: center; justify-content: center; }
-  .saas-btn-ghost { @apply h-btn-ghost; width: 100%; display: flex; align-items: center; justify-content: center; }
-  .saas-label { @apply h-label; }
-}
-
-/* ─── KEYFRAMES ─── */
-
-@keyframes flicker {
-  0%, 95%, 100% { opacity: 1; }
-  96% { opacity: 0.4; }
-  97% { opacity: 1; }
-  98% { opacity: 0.2; }
-  99% { opacity: 0.9; }
-}
-
-@keyframes glitch-1 {
-  0%   { transform: translate(0,0); opacity: 0; }
-  10%  { transform: translate(-2px, 1px); opacity: 0.7; }
-  11%  { opacity: 0; }
-  40%  { transform: translate(2px, -1px); opacity: 0; }
-  41%  { opacity: 0.5; }
-  42%  { opacity: 0; }
-  100% { opacity: 0; }
-}
-
-@keyframes glitch-2 {
-  0%   { transform: translate(0,0); opacity: 0; }
-  20%  { transform: translate(2px, 2px); opacity: 0.4; }
-  21%  { opacity: 0; }
-  60%  { transform: translate(-3px, 0px); opacity: 0; }
-  61%  { opacity: 0.3; }
-  62%  { opacity: 0; }
-  100% { opacity: 0; }
-}
-
-@keyframes blood-pulse {
-  0%, 100% { opacity: 0.6; box-shadow: 0 0 8px var(--h-red-glow); }
-  50%       { opacity: 1;   box-shadow: 0 0 20px var(--h-red-glow), 0 0 40px rgba(140,0,0,0.2); }
-}
-
-@keyframes heartbeat {
-  0%, 100% { transform: scale(1); }
-  10%       { transform: scale(1.06); }
-  20%       { transform: scale(1); }
-  30%       { transform: scale(1.04); }
-  40%       { transform: scale(1); }
-}
-
-@keyframes ekg {
-  0%   { stroke-dashoffset: 1000; opacity: 0.3; }
-  30%  { opacity: 1; }
-  90%  { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0.1; }
-}
-
-@keyframes flatline {
-  0%, 90% { stroke-dashoffset: 500; }
-  100%    { stroke-dashoffset: 0; }
-}
-
-@keyframes static-flash {
-  0%, 92%, 100% { opacity: 0; }
-  93%           { opacity: 0.04; }
-  94%           { opacity: 0; }
-  97%           { opacity: 0.06; }
-  98%           { opacity: 0; }
-}
-
-@keyframes drip {
-  0%   { transform: scaleY(0); transform-origin: top; }
-  40%  { transform: scaleY(1); transform-origin: top; }
-  100% { transform: translateY(20px) scaleY(0.5); opacity: 0; }
-}
-
-@keyframes blood-rise {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0%); }
-}
-
-@keyframes scan-line {
-  0%   { top: -10%; }
-  100% { top: 110%; }
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25%       { transform: translateX(-3px) rotate(-0.5deg); }
-  75%       { transform: translateX(3px)  rotate(0.5deg); }
-}
-
-@keyframes emerge {
-  from { opacity: 0; transform: translateY(20px) scale(0.97); filter: blur(4px); }
-  to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-}
-
-@keyframes red-flash {
-  0%, 100% { background: var(--h-bg); }
-  50%       { background: rgba(120,0,0,0.15); }
-}
-
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-/* ─── STATIC NOISE OVERLAY ─── */
-.static-noise {
-  animation: static-flash 6s linear infinite;
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9997;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
-  background-size: 150px 150px;
-  mix-blend-mode: screen;
-  opacity: 0;
-}
-
-/* ─── SCAN LINE ─── */
-.scan-line {
-  position: fixed;
-  left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(180,0,0,0.3), transparent);
-  animation: scan-line 8s linear infinite;
-  pointer-events: none;
-  z-index: 9996;
-}
-
-/* ─── HORROR LOADING ─── */
-.horror-loading {
-  animation: emerge 0.6s ease-out forwards;
-}
-
-/* ─── PAGE ELEMENTS ─── */
-h1, h2, h3 {
-  font-family: 'Special Elite', cursive;
-}
-
-.font-mono-horror {
-  font-family: 'Share Tech Mono', monospace;
 }

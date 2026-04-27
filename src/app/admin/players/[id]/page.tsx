@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Trash2, Save } from 'lucide-react'
 import { ROUND_ORDER, ROUND_LABELS } from '@/lib/constants'
-import { motion } from 'framer-motion'
 
 export default function EditPlayerPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -37,25 +36,25 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
         body: JSON.stringify({ name, roundOverrides: rounds })
       })
       if (res.ok) {
-        setMessage({ type: 'success', text: 'RECORD UPDATED.' })
+        setMessage({ type: 'success', text: 'Record updated successfully.' })
         router.refresh()
       } else {
-        setMessage({ type: 'error', text: 'FAILED TO UPDATE RECORD.' })
+        setMessage({ type: 'error', text: 'Failed to update record.' })
       }
     } catch {
-      setMessage({ type: 'error', text: 'SYSTEM ERROR.' })
+      setMessage({ type: 'error', text: 'System error.' })
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!confirm('DELETE THIS SUBJECT FROM THE SYSTEM?')) return
+    if (!confirm('Are you sure you want to delete this participant?')) return
     try {
       const res = await fetch(`/api/players/${params.id}`, { method: 'DELETE' })
       if (res.ok) router.push('/admin/players')
     } catch {
-      setMessage({ type: 'error', text: 'DELETE FAILED.' })
+      setMessage({ type: 'error', text: 'Delete failed.' })
     }
   }
 
@@ -64,76 +63,75 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
   }
 
   if (loading) return (
-    <div className="flex h-40 items-center justify-center">
-      <div className="text-center">
-        <div className="w-6 h-6 border border-red-800 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-[10px] tracking-widest text-red-900 animate-pulse uppercase" style={{ fontFamily: 'Share Tech Mono, monospace' }}>RETRIEVING SUBJECT...</p>
+    <div className="flex h-64 items-center justify-center">
+      <div className="flex items-center gap-3 text-muted-foreground">
+        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <span className="text-sm font-medium">Loading player data...</span>
       </div>
     </div>
   )
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-xl space-y-5">
-      <div className="flex items-center gap-3">
-        <Link href="/admin/players" className="p-2 border border-red-900/25 text-[#d4b8b8] hover:text-red-600 hover:border-red-900/50 transition-colors">
-          <ArrowLeft className="w-4 h-4" />
+    <div className="max-w-2xl space-y-6">
+      <div className="flex items-center gap-4">
+        <Link href="/admin/players" className="p-2 border border-border rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-2 transition-colors">
+          <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-xl text-[#c8bfbf]" style={{ fontFamily: 'Special Elite, cursive' }}>EDIT SUBJECT</h1>
-          <p className="text-[10px] tracking-widest text-[#d4b8b8] uppercase" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
-            #{player.playerNumber}
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Edit Player</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            ID: {player.playerNumber}
           </p>
         </div>
       </div>
 
       {message && (
-        <div className={`text-[11px] px-4 py-3 tracking-widest uppercase border ${message.type === 'success' ? 'border-green-900/50 bg-green-950/20 text-green-600' : 'border-red-900/50 bg-red-950/20 text-red-500'}`} style={{ fontFamily: 'Share Tech Mono, monospace' }}>
-          {message.type === 'success' ? '✓' : '⚠'} {message.text}
+        <div className={`p-4 rounded-lg border text-sm font-medium ${message.type === 'success' ? 'border-green-200 bg-green-50 text-green-700' : 'border-red-200 bg-red-50 text-red-700'}`}>
+          {message.text}
         </div>
       )}
 
-      <div className="h-card blood-border-top p-6 space-y-6">
-        <div className="flex gap-5 items-start">
-          <div className={`w-20 h-20 border overflow-hidden flex-shrink-0 ${player.isRegistered ? 'border-red-900/40' : 'border-red-950/30'}`}>
+      <div className="h-card p-6 space-y-8">
+        <div className="flex flex-col sm:flex-row gap-6 items-start">
+          <div className="w-24 h-24 rounded-full border border-border overflow-hidden flex-shrink-0 bg-surface-2">
             {player.photoUrl
               ? <img src={player.photoUrl} className="w-full h-full object-cover" alt="" />
-              : <div className="w-full h-full bg-red-950/20 flex items-center justify-center text-[10px] text-[#d4b8b8]" style={{ fontFamily: 'Share Tech Mono, monospace' }}>NO PHOTO</div>
+              : <div className="w-full h-full flex items-center justify-center text-sm font-medium text-muted-foreground">No Photo</div>
             }
           </div>
-          <div className="flex-1 space-y-4">
+          <div className="flex-1 space-y-4 w-full">
             <div>
-              <label className="h-label">DISPLAY NAME</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} className="h-input" placeholder="SUBJECT NAME" />
+              <label className="h-label">Display Name</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} className="h-input max-w-sm" placeholder="Participant Name" />
             </div>
             <div>
-              <label className="h-label">STATUS</label>
-              <div className="px-3 py-2 border border-red-900/20 text-[11px] tracking-widest uppercase" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
-                {player.isRegistered ? <span className="badge-green">REGISTERED</span> : <span className="badge-gray">PENDING</span>}
+              <label className="h-label mb-1.5">Status</label>
+              <div className="inline-block">
+                {player.isRegistered ? <span className="badge-green">Registered</span> : <span className="badge-gray">Pending</span>}
               </div>
             </div>
           </div>
         </div>
 
-        <div>
-          <p className="text-[10px] tracking-[0.3em] text-[#d4b8b8] uppercase mb-3" style={{ fontFamily: 'Share Tech Mono, monospace' }}>▸ ROUND OVERRIDE</p>
-          <div className="space-y-2">
+        <div className="border-t border-border pt-6">
+          <h3 className="text-base font-semibold text-foreground mb-4">Round Progress Override</h3>
+          <div className="space-y-3">
             {ROUND_ORDER.map(roundName => {
               const r = rounds.find(r => r.round === roundName)
               if (!r) return null
               return (
-                <div key={roundName} className="flex items-center justify-between py-2 px-3 border border-red-900/15 hover:border-red-900/30 transition-colors">
-                  <span className="text-[11px] tracking-widest text-[#7a6e6e] uppercase" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
+                <div key={roundName} className="flex items-center justify-between py-3 px-4 rounded-lg border border-border bg-surface-2">
+                  <span className="text-sm font-medium text-foreground">
                     {ROUND_LABELS[roundName as keyof typeof ROUND_LABELS]}
                   </span>
                   <select
                     value={r.status}
                     onChange={e => handleRoundChange(roundName, e.target.value)}
-                    className="text-[11px] bg-[#3a1c1e] border border-red-900/30 text-[#c8bfbf] px-3 py-1.5 focus:outline-none focus:border-red-700 cursor-pointer uppercase tracking-widest"
-                    style={{ fontFamily: 'Share Tech Mono, monospace' }}
+                    className="text-sm border border-border bg-surface text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer"
                   >
-                    <option value="PENDING">PENDING</option>
-                    <option value="SURVIVED">SURVIVED</option>
-                    <option value="ELIMINATED">ELIMINATED</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="SURVIVED">Survived</option>
+                    <option value="ELIMINATED">Eliminated</option>
                   </select>
                 </div>
               )
@@ -142,14 +140,14 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      <div className="flex justify-between gap-4">
-        <button onClick={handleDelete} className="h-btn-danger flex items-center gap-2">
-          <Trash2 className="w-4 h-4" /> TERMINATE
+      <div className="flex justify-between items-center pt-2">
+        <button onClick={handleDelete} className="flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 px-3 py-2 rounded-md hover:bg-red-50 transition-colors">
+          <Trash2 className="w-4 h-4" /> Delete Player
         </button>
         <button onClick={handleSave} disabled={saving} className="h-btn flex items-center gap-2">
-          <Save className="w-4 h-4" /> {saving ? 'SAVING...' : 'SAVE RECORD'}
+          <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
-    </motion.div>
+    </div>
   )
 }

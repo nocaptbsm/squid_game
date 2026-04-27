@@ -1,16 +1,16 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { SquidButton } from '@/components/squid/SquidButton'
-import { Printer } from 'lucide-react'
-import { ShapeIcon } from '@/components/squid/ShapeIcon'
+import { Download, Loader2 } from 'lucide-react'
 
 export default function PrintCards() {
   const [players, setPlayers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [generating, setGenerating] = useState(false)
+  const [progress, setProgress] = useState(0)
 
   useEffect(() => {
-    fetch('/api/players?limit=1000') // Fetch all players
+    fetch('/api/players?limit=1000')
       .then(res => res.json())
       .then(data => {
         if (data.players) setPlayers(data.players)
@@ -18,81 +18,180 @@ export default function PrintCards() {
       })
   }, [])
 
-  const handlePrint = () => {
-    window.print()
+  // Fetch a QR image and return it as a base64 data URL
+  const fetchQRBase64 = async (token: string): Promise<string> => {
+    const res = await fetch(`/api/qr/${token}`)
+    const blob = await res.blob()
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    })
+  }
+
+  const downloadPDF = async () => {
+    setGenerating(true)
+    setProgress(0)
+
+    try {
+      // Dynamic import to avoid SSR issues
+      const jsPDF = (await import('jspdf')).default
+
+      // A4 dimensions in mm
+      const PAGE_W = 210
+      const PAGE_H = 297
+
+      // Layout: 4 columns × 3 rows = 12 per page
+      const COLS = 4
+      const ROWS = 3
+      const MARGIN = 10        // mm, outer margin
+      const GAP = 4            // mm, gap between cells
+      const LABEL_H = 8        // mm, height reserved for player number text
+
+      const cellW = (PAGE_W - 2 * MARGIN - (COLS - 1) * GAP) / COLS
+      const cellH = (PAGE_H - 2 * MARGIN - (ROWS - 1) * GAP) / ROWS
+      const qrSize = Math.min(cellW, cellH - LABEL_H)
+
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+      pdf.setFont('helvetica', 'bold')
+
+      for (let i = 0; i < players.length; i++) {
+        const player = players[i]
+        const pageIndex = Math.floor(i / (COLS * ROWS))
+        const cellIndex = i % (COLS * ROWS)
+        const col = cellIndex % COLS
+        const row = Math.floor(cellIndex / COLS)
+
+        // Add new page (not for the first cell)
+        if (i > 0 && cellIndex === 0) {
+          pdf.addPage()
+        }
+
+        const x = MARGIN + col * (cellW + GAP)
+        const y = MARGIN + row * (cellH + GAP)
+
+        // Center QR within cell
+        const qrX = x + (cellW - qrSize) / 2
+        const qrY = y
+
+        // Fetch QR code image
+        const qrBase64 = await fetchQRBase64(player.qrToken)
+        pdf.addImage(qrBase64, 'PNG', qrX, qrY, qrSize, qrSize)
+
+        // Player number label below QR
+        pdf.setFontSize(9)
+        pdf.setTextColor(30, 30, 30)
+        pdf.text(
+          `#${player.playerNumber}`,
+          x + cellW / 2,
+          qrY + qrSize + 5,
+          { align: 'center' }
+        )
+
+        // Thin border around cell
+        pdf.setDrawColor(220, 220, 220)
+        pdf.setLineWidth(0.2)
+        pdf.rect(x, y, cellW, cellH - LABEL_H + LABEL_H)
+
+        // Update progress
+        setProgress(Math.round(((i + 1) / players.length) * 100))
+      }
+
+      pdf.save('paradox-qr-codes.pdf')
+    } catch (err) {
+      console.error('PDF generation failed:', err)
+      alert('Failed to generate PDF. Please try again.')
+    } finally {
+      setGenerating(false)
+      setProgress(0)
+    }
   }
 
   if (loading) {
-    return <div className="p-8 font-bold">Loading cards...</div>
+    return (
+      <div className="flex h-60 items-center justify-center text-muted-foreground gap-3">
+        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <span className="text-sm font-medium">Loading players...</span>
+      </div>
+    )
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-8 print:hidden">
-        <h1 className="text-3xl font-black uppercase tracking-widest text-white">
-          Print ID Cards
-        </h1>
-        <SquidButton onClick={handlePrint} variant="pink">
-          <Printer className="w-4 h-4 mr-2" /> Print All Cards
-        </SquidButton>
+    <div className="space-y-8 max-w-7xl">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">QR Code Cards</h1>
+          <p className="text-sm text-muted-foreground mt-2">
+            {players.length} player QR codes · A4 PDF · 12 per page
+          </p>
+        </div>
+
+        <button
+          onClick={downloadPDF}
+          disabled={generating || players.length === 0}
+          className="h-btn flex items-center gap-2 min-w-[180px] justify-center"
+        >
+          {generating ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              {progress > 0 ? `Generating... ${progress}%` : 'Starting...'}
+            </>
+          ) : (
+            <>
+              <Download className="w-4 h-4" />
+              Download PDF
+            </>
+          )}
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 print:grid-cols-2 print:gap-4 print:p-0">
-        {players.map(player => (
-          <div 
-            key={player.id} 
-            className="bg-sqCard border-[3px] border-sqPink p-4 rounded-xl flex flex-col items-center relative overflow-hidden break-inside-avoid shadow-[0_0_15px_rgba(255,0,103,0.3)] aspect-[3/4]"
-          >
-            <div className="absolute top-2 right-2 text-2xl font-black font-mono text-sqPink tracking-tighter">
-              #{player.playerNumber}
-            </div>
-
-            <div className="flex gap-2 mb-4 absolute top-3 left-3">
-              <ShapeIcon shape="circle" size={12} />
-              <ShapeIcon shape="triangle" size={12} />
-              <ShapeIcon shape="square" size={12} />
-            </div>
-
-            <div className="w-24 h-24 mt-8 rounded-full border-2 border-sqPink bg-black overflow-hidden flex-shrink-0">
-              {player.photoUrl ? (
-                <img src={player.photoUrl} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-[10px] text-sqMuted text-center p-2">NO PHOTO</div>
-              )}
-            </div>
-
-            <h3 className="mt-4 text-lg font-black uppercase tracking-widest text-white text-center line-clamp-2">
-              {player.name || 'GUEST'}
-            </h3>
-
-            <div className="mt-auto pt-4 w-32 h-32 bg-white p-1 rounded-lg">
-              <img src={`/api/qr/${player.qrToken}`} className="w-full h-full object-contain" />
-            </div>
-
-            <div className="absolute bottom-2 left-0 right-0 text-center text-[10px] text-sqPink font-bold tracking-[0.3em] uppercase">
-              Paradox 2025
-            </div>
+      {/* Progress bar */}
+      {generating && (
+        <div className="h-card p-4">
+          <div className="flex justify-between text-sm font-medium mb-2">
+            <span className="text-muted-foreground">Fetching QR codes...</span>
+            <span className="text-foreground">{progress}%</span>
           </div>
-        ))}
-      </div>
+          <div className="h-2 w-full bg-surface-2 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            This may take a moment for {players.length} players. Please wait.
+          </p>
+        </div>
+      )}
 
-      <style jsx global>{`
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          .print\\:grid-cols-2, .print\\:grid-cols-2 * {
-            visibility: visible;
-          }
-          .print\\:grid-cols-2 {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-          }
-          @page { margin: 0.5cm; }
-        }
-      `}</style>
+      {/* Preview grid */}
+      <div>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+          Preview
+        </p>
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-3">
+          {players.map(player => (
+            <div
+              key={player.id}
+              className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border bg-surface hover:border-primary/40 transition-colors"
+            >
+              {/* QR Image */}
+              <img
+                src={`/api/qr/${player.qrToken}`}
+                alt={`QR for ${player.playerNumber}`}
+                className="w-full aspect-square object-contain"
+                loading="lazy"
+              />
+              {/* Player number */}
+              <span className="text-[10px] font-bold font-mono text-foreground">
+                #{player.playerNumber}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

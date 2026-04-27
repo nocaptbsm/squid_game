@@ -37,9 +37,9 @@ async function main() {
     })
   }
 
-  // 3. Create 200 Players
+  // 3. Create 350 Players
   const playersData = []
-  for (let i = 1; i <= 200; i++) {
+  for (let i = 1; i <= 350; i++) {
     const playerNumber = i.toString().padStart(3, '0')
     const qrToken = crypto.randomUUID()
     

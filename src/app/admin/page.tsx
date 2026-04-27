@@ -1,134 +1,249 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { Users, UserCheck, Activity } from 'lucide-react'
-import { motion } from 'framer-motion'
+import Link from 'next/link'
+import { Users, UserCheck, Activity, XCircle } from 'lucide-react'
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend,
+} from 'recharts'
+import { ROUND_ORDER, ROUND_LABELS } from '@/lib/constants'
 
-function StatCard({ label, value, icon: Icon, color, delay }: any) {
-  const [displayed, setDisplayed] = useState(0)
-
-  useEffect(() => {
-    if (!value) return
-    // Count-up with horror scramble effect
-    let start = 0
-    const end = parseInt(value)
-    const duration = 1200
-    const step = Math.max(1, Math.floor(end / 30))
-    const interval = setInterval(() => {
-      start += step
-      if (start >= end) { setDisplayed(end); clearInterval(interval) }
-      else setDisplayed(start)
-    }, duration / 30)
-    return () => clearInterval(interval)
-  }, [value])
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.6 }}
-      className="h-card p-5 blood-border-top relative overflow-hidden"
-    >
-      <div className="absolute top-0 right-0 w-24 h-24 opacity-[0.03] pointer-events-none" style={{ color }}>
-        <Icon style={{ width: '100%', height: '100%' }} />
+// ─── Stat Card ────────────────────────────────────────────────────────────────
+function StatCard({ label, value, icon: Icon, colorClass, href }: any) {
+  const content = (
+    <div className="h-card p-6 h-full hover:border-primary/50 transition-colors cursor-pointer group">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+        <div className={`p-2 rounded-lg ${colorClass}`}><Icon className="w-5 h-5" /></div>
       </div>
-      <p className="text-[10px] tracking-[0.3em] text-[#d4b8b8] uppercase mb-3" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
-        {label}
-      </p>
-      <p className="text-4xl font-bold flicker" style={{ color, fontFamily: 'Special Elite, cursive', textShadow: `0 0 15px ${color}40` }}>
-        {displayed}
-      </p>
-    </motion.div>
+      <p className="text-3xl font-bold text-foreground">{value}</p>
+      <p className="text-xs text-muted-foreground mt-2 group-hover:text-primary transition-colors">View players →</p>
+    </div>
+  )
+  return href ? <Link href={href}>{content}</Link> : content
+}
+
+// ─── Custom tooltip ────────────────────────────────────────────────────────────
+function CustomTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null
+  return (
+    <div className="bg-surface border border-border shadow-sm rounded-lg px-3 py-2 text-xs">
+      <p className="font-semibold text-foreground mb-1">{label}</p>
+      {payload.map((p: any) => (
+        <p key={p.name} style={{ color: p.color }} className="font-medium">
+          {p.name}: {p.value}
+        </p>
+      ))}
+    </div>
   )
 }
 
+// ─── Donut label ──────────────────────────────────────────────────────────────
+function renderCustomLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) {
+  if (percent < 0.05) return null
+  const RADIAN = Math.PI / 180
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5
+  const x = cx + radius * Math.cos(-midAngle * RADIAN)
+  const y = cy + radius * Math.sin(-midAngle * RADIAN)
+  return (
+    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-bold" fontSize={11}>
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
+  )
+}
+
+const DONUT_COLORS = ['#94a3b8', '#3b82f6', '#22c55e', '#ef4444']
+
+// ─── Main Dashboard ────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<any>(null)
+  const [players, setPlayers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetch('/api/players?limit=1000')
       .then(res => res.json())
       .then(data => {
-        const players = data.players || []
-        const registered = players.filter((p: any) => p.isRegistered).length
-        const eliminated = players.filter((p: any) => p.rounds?.some((r: any) => r.status === 'ELIMINATED')).length
-        const surviving = registered - eliminated
-        setStats({ total: players.length, registered, eliminated, surviving })
+        setPlayers(data.players || [])
         setLoading(false)
       })
   }, [])
 
   if (loading) {
     return (
-      <div className="flex h-60 items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border border-red-800 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[10px] tracking-[0.4em] text-red-900 uppercase animate-pulse" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
-            LOADING DATA...
-          </p>
+      <div className="flex h-[60vh] items-center justify-center">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm font-medium">Loading statistics...</span>
         </div>
       </div>
     )
   }
 
-  return (
-    <div className="space-y-8 max-w-4xl">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <h1 className="text-2xl text-[#c8bfbf] flicker" style={{ fontFamily: 'Special Elite, cursive' }}>
-          COMMAND CENTER
-        </h1>
-        <p className="text-[10px] tracking-[0.4em] text-[#d4b8b8] uppercase mt-1" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
-          LIVE EVENT STATISTICS
-        </p>
-      </motion.div>
+  // ── Derived stats ────────────────────────────────────────────────
+  const total = players.length
+  const registered = players.filter(p => p.isRegistered).length
+  const eliminated = players.filter(p => p.rounds?.some((r: any) => r.status === 'ELIMINATED')).length
+  const surviving = registered - eliminated
+  const pending = total - registered
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="TOTAL SEEDED" value={stats.total} icon={Users} color="#6b5555" delay={0.1} />
-        <StatCard label="REGISTERED" value={stats.registered} icon={UserCheck} color="#8b6914" delay={0.2} />
-        <StatCard label="SURVIVING" value={stats.surviving} icon={Activity} color="#2d7d2d" delay={0.3} />
-        <StatCard label="ELIMINATED" value={stats.eliminated} icon={Users} color="#cc0000" delay={0.4} />
+  // ── Donut data ───────────────────────────────────────────────────
+  const statusDonut = [
+    { name: 'Unregistered', value: pending },
+    { name: 'Registered', value: registered > 0 ? surviving + eliminated : 0 },
+    { name: 'Surviving', value: surviving },
+    { name: 'Eliminated', value: eliminated },
+  ].filter(d => d.value > 0)
+
+  // ── Per-round bar data ───────────────────────────────────────────
+  const roundBarData = ROUND_ORDER.map(roundName => {
+    const allRounds = players.flatMap(p => p.rounds?.filter((r: any) => r.round === roundName) ?? [])
+    const survived = allRounds.filter((r: any) => r.status === 'SURVIVED').length
+    const elim = allRounds.filter((r: any) => r.status === 'ELIMINATED').length
+    const pending = allRounds.filter((r: any) => r.status === 'PENDING').length
+    return {
+      name: ROUND_LABELS[roundName as keyof typeof ROUND_LABELS],
+      Survived: survived,
+      Eliminated: elim,
+      Pending: pending,
+    }
+  })
+
+  // ── Registration funnel ──────────────────────────────────────────
+  const funnelData = [
+    { name: 'Seeded', value: total, fill: '#94a3b8' },
+    { name: 'Registered', value: registered, fill: '#3b82f6' },
+    { name: 'Surviving', value: surviving, fill: '#22c55e' },
+  ]
+
+  return (
+    <div className="space-y-8 max-w-6xl">
+      {/* Title */}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
+        <p className="text-sm text-muted-foreground mt-2">Live overview of all participant data.</p>
       </div>
 
-      {stats.registered > 0 && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="h-card p-6 blood-border-top">
-          <p className="text-[10px] tracking-[0.4em] text-[#d4b8b8] uppercase mb-5" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
-            ▸ SURVIVAL METRICS
-          </p>
-          <div className="space-y-5">
-            <div>
-              <div className="flex justify-between text-[10px] tracking-widest text-[#d4b8b8] uppercase mb-2" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
-                <span>REGISTRATION</span>
-                <span>{Math.round((stats.registered / stats.total) * 100)}%</span>
-              </div>
-              <div className="h-1 bg-red-950/40 rounded-none overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(stats.registered / stats.total) * 100}%` }}
-                  transition={{ duration: 1, delay: 0.7 }}
-                  className="h-full bg-red-800"
-                  style={{ boxShadow: '0 0 8px rgba(139,0,0,0.6)' }}
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Total Seeded"  value={total}      icon={Users}     colorClass="bg-gray-100 text-gray-600"  href="/admin/players?filter=all" />
+        <StatCard label="Registered"    value={registered} icon={UserCheck} colorClass="bg-blue-50 text-blue-600"   href="/admin/players?filter=registered" />
+        <StatCard label="Surviving"     value={surviving}  icon={Activity}  colorClass="bg-green-50 text-green-600" href="/admin/players?filter=surviving" />
+        <StatCard label="Eliminated"    value={eliminated} icon={XCircle}   colorClass="bg-red-50 text-red-600"     href="/admin/players?filter=eliminated" />
+      </div>
+
+      {/* Row 1: Funnel + Donut */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Funnel bar chart */}
+        <div className="h-card p-6 lg:col-span-3">
+          <h3 className="text-base font-semibold text-foreground mb-1">Participant Funnel</h3>
+          <p className="text-xs text-muted-foreground mb-6">How many players progress through each stage</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={funnelData} barSize={52}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} width={36} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f1f5f9' }} />
+              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                {funnelData.map((entry, i) => (
+                  <Cell key={i} fill={entry.fill} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Status donut */}
+        <div className="h-card p-6 lg:col-span-2 flex flex-col">
+          <h3 className="text-base font-semibold text-foreground mb-1">Status Breakdown</h3>
+          <p className="text-xs text-muted-foreground mb-4">Current player status distribution</p>
+          <div className="flex-1 flex items-center justify-center">
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie
+                  data={statusDonut}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={52}
+                  outerRadius={80}
+                  dataKey="value"
+                  labelLine={false}
+                  label={renderCustomLabel}
+                >
+                  {statusDonut.map((_, i) => (
+                    <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Legend
+                  iconType="circle"
+                  iconSize={8}
+                  formatter={(value) => <span style={{ fontSize: 11, color: '#64748b' }}>{value}</span>}
                 />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-[10px] tracking-widest text-[#d4b8b8] uppercase mb-2" style={{ fontFamily: 'Share Tech Mono, monospace' }}>
-                <span>SURVIVAL RATE</span>
-                <span>{stats.registered > 0 ? Math.round((stats.surviving / stats.registered) * 100) : 0}%</span>
-              </div>
-              <div className="h-1 bg-red-950/40 rounded-none overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${stats.registered > 0 ? (stats.surviving / stats.registered) * 100 : 0}%` }}
-                  transition={{ duration: 1, delay: 0.9 }}
-                  className="h-full"
-                  style={{ background: '#2d7d2d', boxShadow: '0 0 8px rgba(45,125,45,0.5)' }}
-                />
-              </div>
-            </div>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-        </motion.div>
-      )}
+        </div>
+      </div>
+
+      {/* Row 2: Per-round breakdown */}
+      <div className="h-card p-6">
+        <h3 className="text-base font-semibold text-foreground mb-1">Round-by-Round Results</h3>
+        <p className="text-xs text-muted-foreground mb-6">Survived / Eliminated / Pending per round</p>
+        <ResponsiveContainer width="100%" height={260}>
+          <BarChart data={roundBarData} barGap={2} barCategoryGap="25%">
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+            <XAxis
+              dataKey="name"
+              tick={{ fontSize: 10, fill: '#64748b' }}
+              axisLine={false}
+              tickLine={false}
+              interval={0}
+              angle={-20}
+              textAnchor="end"
+              height={48}
+            />
+            <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} width={36} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
+            <Legend
+              iconType="circle"
+              iconSize={8}
+              formatter={(value) => <span style={{ fontSize: 11, color: '#64748b' }}>{value}</span>}
+            />
+            <Bar dataKey="Survived"   fill="#22c55e" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Eliminated" fill="#ef4444" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Pending"    fill="#e2e8f0" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Row 3: Registration progress metrics */}
+      <div className="h-card p-6">
+        <h3 className="text-base font-semibold text-foreground mb-6">Progress Metrics</h3>
+        <div className="space-y-5">
+          {[
+            { label: 'Registration rate', value: registered, total, color: 'bg-blue-500' },
+            { label: 'Survival rate (of registered)', value: surviving, total: registered, color: 'bg-green-500' },
+            { label: 'Elimination rate (of registered)', value: eliminated, total: registered, color: 'bg-red-500' },
+          ].map(({ label, value, total: denom, color }) => {
+            const pct = denom > 0 ? Math.round((value / denom) * 100) : 0
+            return (
+              <div key={label}>
+                <div className="flex justify-between text-sm font-medium mb-1.5">
+                  <span className="text-muted-foreground">{label}</span>
+                  <span className="text-foreground">{value} <span className="text-muted-foreground font-normal">/ {denom}</span> · {pct}%</span>
+                </div>
+                <div className="h-2 w-full bg-surface-2 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full ${color} rounded-full transition-all duration-1000 ease-out`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }
