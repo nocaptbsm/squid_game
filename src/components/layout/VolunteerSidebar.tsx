@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { QrCode, RefreshCw, LogOut, ChevronLeft, Menu } from 'lucide-react'
 import { signOut } from 'next-auth/react'
+import { Logo } from './Logo'
 
 export function VolunteerSidebar() {
   const pathname = usePathname()
@@ -46,29 +47,21 @@ export function VolunteerSidebar() {
       <div className={`
         ${isCollapsed ? 'w-20' : 'w-64'} 
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-        bg-surface border-r border-border min-h-screen flex flex-col fixed md:relative z-50 transition-all duration-300 ease-in-out
+        bg-[#0F172A] border-r border-slate-800 min-h-screen flex flex-col fixed md:relative z-50 transition-all duration-300 ease-in-out shadow-2xl
       `}>
-        <div className={`p-6 border-b border-border flex items-center justify-between ${isCollapsed ? 'px-4' : ''}`}>
-          {!isCollapsed && (
-            <div className="animate-in fade-in duration-300">
-              <h2 className="text-lg font-bold tracking-tight text-foreground">Crew Portal</h2>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Field Console</p>
-            </div>
-          )}
-          {isCollapsed && (
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-xl">
-              C
-            </div>
-          )}
+        <div className={`p-6 border-b border-slate-800 flex items-center justify-between ${isCollapsed ? 'px-4' : ''}`}>
+          <div className="flex items-center gap-3">
+            <Logo hideText={isCollapsed} className={isCollapsed ? 'scale-110' : ''} />
+          </div>
           <button 
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className={`p-1.5 rounded-md hover:bg-surface-2 text-muted-foreground transition-all hidden md:block ${isCollapsed ? 'rotate-180' : ''}`}
+            className={`p-1.5 rounded-md hover:bg-slate-800 text-slate-400 transition-all hidden md:block ${isCollapsed ? 'rotate-180' : ''}`}
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
         </div>
 
-        <nav className="flex-1 py-6 px-3 space-y-1">
+        <nav className="flex-1 py-8 px-3 space-y-1.5">
           {links.map((link) => {
             const isActive = pathname === link.href
             const Icon = link.icon
@@ -76,24 +69,28 @@ export function VolunteerSidebar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group ${
+                className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold transition-all group ${
                   isActive 
-                    ? 'bg-primary text-white shadow-sm shadow-primary/20' 
-                    : 'text-muted-foreground hover:bg-surface-2 hover:text-foreground'
+                    ? 'bg-primary text-white shadow-lg shadow-primary/30' 
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                 } ${isCollapsed ? 'justify-center px-0' : ''}`}
                 title={isCollapsed ? link.label : ''}
               >
-                <Icon className={`w-5 h-5 flex-shrink-0 transition-transform ${isActive ? '' : 'group-hover:scale-110'}`} />
-                {!isCollapsed && <span className="animate-in fade-in slide-in-from-left-2 duration-300">{link.label}</span>}
+                <Icon className={`w-5 h-5 flex-shrink-0 transition-all ${isActive ? 'scale-110' : 'group-hover:scale-110 group-hover:text-white'}`} />
+                {!isCollapsed && (
+                  <span className="animate-in fade-in slide-in-from-left-2 duration-300">
+                    {link.label}
+                  </span>
+                )}
               </Link>
             )
           })}
         </nav>
 
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-slate-800">
           <button
             onClick={() => signOut({ callbackUrl: '/volunteer/login' })}
-            className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-all ${isCollapsed ? 'justify-center px-0' : ''}`}
+            className={`flex items-center gap-3 w-full px-3 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all ${isCollapsed ? 'justify-center px-0' : ''}`}
             title={isCollapsed ? 'Sign Out' : ''}
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
