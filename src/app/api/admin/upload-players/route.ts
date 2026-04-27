@@ -51,50 +51,55 @@ export async function POST(req: NextRequest) {
 
     console.log(`Mapped ${playerEntries.length} valid entries. Ready for database sync.`);
 
-    // Use a transaction for bulk upsert
+    // Use a transaction for bulk upsert with an increased timeout (30 seconds)
     const result = await prisma.$transaction(async (tx) => {
-      let updatedCount = 0
-      
+      // 1. Bulk create players (skip duplicates)
+      await tx.player.createMany({
+        data: playerEntries.map(e => ({
+          playerNumber: e.playerNumber,
+          name: e.name,
+          isRegistered: false
+        })),
+        skipDuplicates: true
+      })
+
+      // 2. Update names for existing players (in case they changed in CSV)
+      // We do this in small batches to avoid too many parallel connections or timeouts
       for (const entry of playerEntries) {
-        if (!entry.playerNumber) continue;
-
-        await tx.player.upsert({
+        await tx.player.update({
           where: { playerNumber: entry.playerNumber },
-          update: { name: entry.name },
-          create: { 
-            playerNumber: entry.playerNumber,
-            name: entry.name,
-            isRegistered: false 
-          }
+          data: { name: entry.name }
         })
-        updatedCount++
+      }
 
-        // Ensure RoundStatus entries exist
-        const player = await tx.player.findUnique({
-          where: { playerNumber: entry.playerNumber },
-          select: { id: true }
-        })
+      // 3. Fetch all player IDs for these player numbers
+      const allPlayers = await tx.player.findMany({
+        where: {
+          playerNumber: { in: playerEntries.map(e => e.playerNumber) }
+        },
+        select: { id: true, playerNumber: true }
+      })
 
-        if (player) {
-          for (const round of ROUND_ORDER) {
-            await tx.roundStatus.upsert({
-              where: {
-                playerId_round: {
-                  playerId: player.id,
-                  round: round
-                }
-              },
-              update: {},
-              create: {
-                playerId: player.id,
-                round: round,
-                status: 'PENDING'
-              }
-            })
-          }
+      // 4. Bulk create RoundStatus entries for all players
+      const roundStatusEntries: any[] = []
+      for (const player of allPlayers) {
+        for (const round of ROUND_ORDER) {
+          roundStatusEntries.push({
+            playerId: player.id,
+            round: round,
+            status: 'PENDING'
+          })
         }
       }
-      return updatedCount
+
+      await tx.roundStatus.createMany({
+        data: roundStatusEntries,
+        skipDuplicates: true
+      })
+
+      return allPlayers.length
+    }, {
+      timeout: 30000 // 30 seconds timeout for large uploads
     })
 
     return NextResponse.json({ 
