@@ -16,7 +16,6 @@ export async function POST(req: NextRequest) {
     const playerEntries = players.map((p: any) => ({
       playerNumber: String(p.rollNo || p.playerNumber).padStart(3, '0'),
       name: p.name,
-      qrToken: uuidv4(),
     }))
 
     // Use a transaction for bulk insertion

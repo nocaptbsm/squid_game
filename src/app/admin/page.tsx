@@ -69,6 +69,27 @@ export default function AdminDashboard() {
       })
   }, [])
 
+  const handleAllocateQR = async (playerId: string) => {
+    try {
+      const res = await fetch('/api/admin/allocate-qr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerIds: [playerId] }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        // Refresh player list
+        const res = await fetch('/api/players?limit=1000')
+        const data = await res.json()
+        setPlayers(data.players || [])
+      } else {
+        alert(data.error)
+      }
+    } catch (err) {
+      alert('Failed to allocate QR')
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
@@ -322,11 +343,18 @@ export default function AdminDashboard() {
                       <span className="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">{player.name || 'UNREGISTERED'}</span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 ${
-                        player.isRegistered ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
-                      }`}>
-                        {player.isRegistered ? 'REGISTERED' : 'PENDING'}
-                      </span>
+                      {player.qrToken ? (
+                        <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 bg-green-500/10 text-green-500 border border-green-500/20">
+                          QR ALLOCATED
+                        </span>
+                      ) : (
+                        <button 
+                          onClick={() => handleAllocateQR(player.id)}
+                          className="text-[9px] font-black uppercase tracking-widest px-2 py-1 bg-red-600 hover:bg-red-700 text-white shadow-[0_0_10px_rgba(220,38,38,0.3)] transition-all"
+                        >
+                          ALLOCATE QR
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))

@@ -20,7 +20,7 @@ model User {
 
 model Player {
   id           String       @id @default(cuid())
-  qrToken      String       @unique  // UUID embedded in QR
+  qrToken      String?      @unique  // UUID embedded in QR - Optional for seeded players
   playerNumber String       @unique  // e.g. "001", "042", "169"
   name         String?
   photoUrl     String?
