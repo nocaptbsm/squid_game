@@ -23,7 +23,11 @@ export async function POST(request: Request) {
     })
 
     if (!player) {
-      return NextResponse.json({ error: 'Player not found' }, { status: 404 })
+      return NextResponse.json({ 
+        isUnassigned: true, 
+        qrToken,
+        message: 'Valid unassigned QR code. Please provide student roll number.' 
+      })
     }
 
     // Log the scan

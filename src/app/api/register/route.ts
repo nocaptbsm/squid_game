@@ -12,9 +12,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { playerId, name, photoBase64 } = await request.json()
+    const { playerId, name, photoBase64, qrToken } = await request.json()
 
-    if (!playerId || !name || !photoBase64) {
+    if (!playerId || !name || !photoBase64 || !qrToken) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
@@ -32,6 +32,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Player photo is locked' }, { status: 403 })
     }
 
+    // Check 350 limit
+    const currentRegistered = await prisma.player.count({
+      where: { isRegistered: true }
+    })
+
+    if (currentRegistered >= 350) {
+      return NextResponse.json({ error: 'Registration limit reached (350/350). No more QR codes can be assigned.' }, { status: 403 })
+    }
+
     // Upload photo to Cloudinary
     const uploadResponse = await cloudinary.uploader.upload(photoBase64, {
       folder: 'squid_game_players',
@@ -42,6 +51,7 @@ export async function POST(request: Request) {
       where: { id: playerId },
       data: {
         name,
+        qrToken, // Map the physical QR to this player
         photoUrl: uploadResponse.secure_url,
         isRegistered: true,
         photoLocked: true,

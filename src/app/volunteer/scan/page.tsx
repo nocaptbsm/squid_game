@@ -14,6 +14,9 @@ export default function VolunteerScanPage() {
   const [registering, setRegistering] = useState(false)
   const [registered, setRegistered] = useState(false)
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
+  const [qrToken, setQrToken] = useState<string | null>(null)
+  const [rollNoInput, setRollNoInput] = useState('')
+  const [needsRollNo, setNeedsRollNo] = useState(false)
   const webcamRef = useRef<Webcam>(null)
 
   const handleScan = async (rawValue: string) => {
@@ -35,10 +38,40 @@ export default function VolunteerScanPage() {
         body: JSON.stringify({ qrToken: token })
       })
       const data = await res.json()
+      
       if (!res.ok) throw new Error(data.error || 'Scan failed')
+
+      if (data.isUnassigned) {
+        setQrToken(data.qrToken)
+        setNeedsRollNo(true)
+      } else {
+        setPlayer(data.player)
+        setName(data.player.name || '')
+        setPhoto(null)
+      }
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const verifyRollNo = async () => {
+    if (!rollNoInput.trim()) { setError('Roll Number is required'); return }
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/verify-roll', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rollNo: rollNoInput })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Verification failed')
+      
       setPlayer(data.player)
       setName(data.player.name || '')
-      setPhoto(null)
+      setNeedsRollNo(false)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -59,7 +92,7 @@ export default function VolunteerScanPage() {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerId: player.id, name, photoBase64: photo })
+        body: JSON.stringify({ playerId: player.id, name, photoBase64: photo, qrToken })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Registration failed')
@@ -72,7 +105,10 @@ export default function VolunteerScanPage() {
     }
   }
 
-  const reset = () => { setPlayer(null); setError(''); setPhoto(null); setName(''); setRegistered(false) }
+  const reset = () => { 
+    setPlayer(null); setError(''); setPhoto(null); setName(''); 
+    setRegistered(false); setQrToken(null); setNeedsRollNo(false); setRollNoInput('');
+  }
 
   return (
     <div className="max-w-sm mx-auto w-full space-y-5 pb-8">
@@ -87,8 +123,37 @@ export default function VolunteerScanPage() {
         </div>
       )}
 
-      {!player && !loading && (
+      {!player && !loading && !needsRollNo && (
         <QRScanner onScan={handleScan} onError={err => console.log('scan error:', err)} />
+      )}
+
+      {needsRollNo && !loading && (
+        <div className="h-card p-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="text-center mb-6">
+            <div className="w-12 h-12 flex items-center justify-center rounded-none border-2 border-red-500 bg-red-950/20 mx-auto mb-4">
+              <Camera className="w-6 h-6 text-red-500" />
+            </div>
+            <p className="text-base font-black uppercase tracking-widest text-white">Unassigned QR Scanned</p>
+            <p className="text-xs text-red-900/80 font-bold uppercase tracking-wider mt-1">Please map this QR to a seeded student</p>
+          </div>
+          
+          <div>
+            <label className="h-label">Student Roll Number</label>
+            <input 
+              type="text" 
+              value={rollNoInput} 
+              onChange={e => setRollNoInput(e.target.value)} 
+              className="h-input" 
+              placeholder="e.g. 042" 
+              onKeyDown={e => e.key === 'Enter' && verifyRollNo()}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <button onClick={reset} className="h-btn-ghost">Cancel</button>
+            <button onClick={verifyRollNo} className="h-btn !bg-red-600">Verify Roll No</button>
+          </div>
+        </div>
       )}
 
       {loading && (
