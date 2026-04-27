@@ -58,7 +58,7 @@ export default function VolunteerScanPage() {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ qrToken: player.qrToken, name, photoBase64: photo })
+        body: JSON.stringify({ playerId: player.id, name, photoBase64: photo })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Registration failed')
