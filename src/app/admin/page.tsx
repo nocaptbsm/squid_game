@@ -222,9 +222,9 @@ export default function AdminDashboard() {
         <h3 className="text-base font-semibold text-foreground mb-6">Progress Metrics</h3>
         <div className="space-y-5">
           {[
-            { label: 'Registration rate', value: registered, total, color: 'bg-blue-500' },
+            { label: 'Registration rate', value: registered, total: 350, color: 'bg-blue-500' },
+            { label: 'QR Pool Utilization', value: registered, total: 350, color: 'bg-red-500' },
             { label: 'Survival rate (of registered)', value: surviving, total: registered, color: 'bg-green-500' },
-            { label: 'Elimination rate (of registered)', value: eliminated, total: registered, color: 'bg-red-500' },
           ].map(({ label, value, total: denom, color }) => {
             const pct = denom > 0 ? Math.round((value / denom) * 100) : 0
             return (
@@ -242,6 +242,57 @@ export default function AdminDashboard() {
               </div>
             )
           })}
+        </div>
+      </div>
+
+      {/* Row 4: QR Allocated Students (Capped 350) */}
+      <div className="h-card overflow-hidden border-red-500/20 mb-8">
+        <div className="p-6 border-b border-red-900/10 bg-red-950/10 flex justify-between items-center">
+          <div>
+            <h3 className="text-base font-semibold text-white uppercase tracking-widest">QR Protocol Allocation</h3>
+            <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider mt-1">Authorized Student Pool (Limit: 350)</p>
+          </div>
+          <div className="text-right">
+            <span className="text-2xl font-black text-white">{registered}</span>
+            <span className="text-red-900 text-sm font-bold"> / 350</span>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-red-900/5 text-[10px] font-black uppercase tracking-[0.3em] text-red-900/60 border-b border-red-900/10">
+                <th className="px-6 py-4 font-black">Student ID</th>
+                <th className="px-6 py-4 font-black">Status</th>
+                <th className="px-6 py-4 font-black text-right">Verification</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-red-900/5">
+              {players.filter(p => p.isRegistered).slice(0, 350).map((player) => (
+                <tr key={player.id} className="hover:bg-red-500/5 transition-colors group">
+                  <td className="px-6 py-4">
+                    <span className="text-sm font-black text-white font-mono">STU-{player.playerNumber}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Active Participant</span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex justify-end gap-1">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="w-1.5 h-1.5 bg-red-500 rounded-none shadow-[0_0_5px_rgba(239,68,68,0.5)]" />
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {registered === 0 && (
+                <tr>
+                  <td colSpan={3} className="px-6 py-12 text-center text-slate-500 italic text-sm">
+                    No QR students registered yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
