@@ -20,9 +20,9 @@ export function AdminSidebar() {
   const [isRoundsExpanded, setIsRoundsExpanded] = React.useState(false)
 
   const links = [
+    { href: '/admin/protocol-qrs', label: 'Protocol QRs (350)', icon: Box },
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/players', label: 'Players', icon: Users },
-    { href: '/admin/protocol-qrs', label: 'Protocol QRs (350)', icon: Box },
   ]
 
   const roundLinks = [
