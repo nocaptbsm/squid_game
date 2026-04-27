@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Printer, Settings, LogOut, ChevronLeft, Menu, Trophy, Upload, Target, Footprints, Timer, Box, Route, Flame } from 'lucide-react'
+import { LayoutDashboard, Users, Settings, LogOut, ChevronLeft, Menu, Trophy, Upload, Target, Footprints, Timer, Box, Route, Flame } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { Logo } from './Logo'
 
@@ -24,7 +24,6 @@ export function AdminSidebar() {
   const links = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/players', label: 'Players', icon: Users },
-    { href: '/admin/print-cards', label: 'Print Cards', icon: Printer },
   ]
 
   const roundLinks = [
