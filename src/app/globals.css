@@ -4,57 +4,57 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%; /* #F8FAFC */
-    --foreground: 222 47% 11%; /* #0F172A */
+    --background: 180 62% 6%; /* #051919 - Dark Teal */
+    --foreground: 0 0% 95%; /* Off-white */
     
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card: 180 40% 8%; /* Slightly lighter teal */
+    --card-foreground: 0 0% 95%;
     
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 180 40% 8%;
+    --popover-foreground: 0 0% 95%;
     
-    --primary: 221 83% 53%; /* Blue 500 */
-    --primary-foreground: 210 40% 98%;
+    --primary: 340 79% 50%; /* #E31B6D - Guard Pink */
+    --primary-foreground: 0 0% 100%;
     
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11.2%;
+    --secondary: 180 20% 12%;
+    --secondary-foreground: 340 79% 50%;
     
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 180 20% 12%;
+    --muted-foreground: 180 10% 60%;
     
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11.2%;
+    --accent: 340 79% 50%;
+    --accent-foreground: 0 0% 100%;
     
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221 83% 53%;
+    --border: 180 20% 15%;
+    --input: 180 20% 15%;
+    --ring: 340 79% 50%;
 
-    --radius: 0.75rem; /* 12px */
+    --radius: 0rem; /* Sharp edges for horror feel */
 
-    /* Legacy variables mapping for smooth transition without breaking everything immediately */
-    --s-bg: #F8FAFC;
-    --s-surface: #FFFFFF;
-    --s-surface-2: #F1F5F9;
-    --s-border: #E2E8F0;
-    --s-accent: #3B82F6;
-    --s-accent-hover: #2563EB;
-    --s-accent-light: #EFF6FF;
-    --s-text: #0F172A;
-    --s-text-secondary: #475569;
-    --s-text-muted: #94A3B8;
+    /* SaaS tokens */
+    --s-bg: #051919;
+    --s-surface: #0a2424;
+    --s-surface-2: #0f3030;
+    --s-border: rgba(227, 27, 109, 0.2);
+    --s-accent: #E31B6D;
+    --s-accent-hover: #C2165D;
+    --s-accent-light: rgba(227, 27, 109, 0.1);
+    --s-text: #F8FAFC;
+    --s-text-secondary: #94A3B8;
+    --s-text-muted: #475569;
     --s-green: #10B981;
-    --s-green-light: #ECFDF5;
+    --s-green-light: rgba(16, 185, 129, 0.1);
     --s-orange: #F59E0B;
-    --s-orange-light: #FFFBEB;
-    --s-red: #EF4444;
-    --s-red-light: #FEF2F2;
+    --s-orange-light: rgba(245, 158, 11, 0.1);
+    --s-red: #E31B6D;
+    --s-red-light: rgba(227, 27, 109, 0.1);
 
-    --s-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --s-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    --s-shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+    --s-shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+    --s-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    --s-shadow-md: 0 20px 40px -20px rgba(227,27,109,0.2);
   }
 }
 
