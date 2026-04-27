@@ -28,8 +28,12 @@ export async function POST(req: NextRequest) {
       // Find roll number - check every possible string key for 'roll' or 'id'
       let rollNo = null;
       for (const key in p) {
-        const k = key.toLowerCase().replace(/\s/g, '');
-        if (k === 'rollno' || k === 'roll' || k === 'id' || k === 'playernumber' || k === 'srno' || k === 'slno') {
+        const k = key.toLowerCase().replace(/\s/g, '').replace(/[^a-z0-9]/g, '');
+        if (
+          k === 'rollno' || k === 'roll' || k === 'id' || k === 'playernumber' || 
+          k === 'srno' || k === 'slno' || k === 'rollnumber' || k === 'studentroll' ||
+          k === 'studentrollno' || k === 'srnumber' || k === 'serialnumber' || k === 'no'
+        ) {
           rollNo = p[key];
           break;
         }

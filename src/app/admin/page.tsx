@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { Users, UserCheck, Activity, XCircle } from 'lucide-react'
 import {
@@ -60,14 +60,20 @@ export default function AdminDashboard() {
   const [players, setPlayers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetch('/api/players?limit=1000')
+  const refreshData = useCallback(() => {
+    setLoading(true)
+    fetch('/api/players?limit=1000', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         setPlayers(data.players || [])
         setLoading(false)
       })
+      .catch(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    refreshData()
+  }, [refreshData])
 
   if (loading) {
     return (
@@ -119,9 +125,18 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8 max-w-6xl">
       {/* Title */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-2">Live overview of all participant data.</p>
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-2">Live overview of all participant data.</p>
+        </div>
+        <button 
+          onClick={refreshData}
+          className="h-btn-small !bg-transparent border border-red-900/30 text-red-900/60 hover:text-red-600 transition-all flex items-center gap-2 uppercase font-black text-[10px] tracking-widest"
+        >
+          <Activity className="w-3 h-3" />
+          Refresh Data
+        </button>
       </div>
 
       {/* Stat cards */}
