@@ -244,6 +244,52 @@ export default function AdminDashboard() {
           })}
         </div>
       </div>
+
+      {/* Row 4: Total Seeded Players List */}
+      <div className="h-card overflow-hidden">
+        <div className="p-6 border-b border-red-900/10 bg-black/5">
+          <h3 className="text-base font-semibold text-foreground uppercase tracking-widest">Total Seeded Players</h3>
+          <p className="text-xs text-muted-foreground mt-1">Verified list of all participants in the protocol</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-red-900/5 text-[10px] font-black uppercase tracking-[0.3em] text-red-900/60 border-b border-red-900/10">
+                <th className="px-6 py-4 font-black">Roll No.</th>
+                <th className="px-6 py-4 font-black">Name</th>
+                <th className="px-6 py-4 font-black text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-red-900/5">
+              {players.length > 0 ? (
+                players.map((player) => (
+                  <tr key={player.id} className="hover:bg-red-500/5 transition-colors group">
+                    <td className="px-6 py-4">
+                      <span className="text-sm font-black text-white font-mono tracking-tighter">#{player.playerNumber}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">{player.name || 'UNREGISTERED'}</span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 ${
+                        player.isRegistered ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
+                      }`}>
+                        {player.isRegistered ? 'REGISTERED' : 'PENDING'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={3} className="px-6 py-12 text-center text-slate-500 italic text-sm">
+                    No players seeded in the database.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   )
 }
