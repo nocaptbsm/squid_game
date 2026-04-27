@@ -11,25 +11,48 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No player data provided' }, { status: 400 })
     }
 
-    // Prepare players for insertion with flexible header mapping
+    console.log(`Received upload request with ${players.length} records. Sample:`, players[0])
+
+    // Prepare players for insertion with extremely flexible header mapping
     const playerEntries = players.map((p: any) => {
-      // Find name field (handle Name, name, full name, student name, etc.)
-      const name = p.name || p.Name || p['Full Name'] || p['Student Name'] || p['player name']
-      // Find roll number (handle rollNo, roll no, playerNumber, player number, id, etc.)
-      const rollNo = p.rollNo || p.rollno || p['Roll No'] || p['roll no'] || p.playerNumber || p.id || p.ID
+      // Find name field - check every possible string key for 'name'
+      let name = null;
+      for (const key in p) {
+        const k = key.toLowerCase().replace(/\s/g, '');
+        if (k === 'name' || k === 'fullname' || k === 'studentname' || k === 'playername' || k === 'student') {
+          name = p[key];
+          break;
+        }
+      }
+
+      // Find roll number - check every possible string key for 'roll' or 'id'
+      let rollNo = null;
+      for (const key in p) {
+        const k = key.toLowerCase().replace(/\s/g, '');
+        if (k === 'rollno' || k === 'roll' || k === 'id' || k === 'playernumber' || k === 'srno' || k === 'slno') {
+          rollNo = p[key];
+          break;
+        }
+      }
+
+      // Fallback if no named keys matched: try to use first and second columns if it looks like an object with generic keys
+      if (!name && p[1]) name = p[1];
+      if (!rollNo && p[0]) rollNo = p[0];
 
       return {
-        playerNumber: String(rollNo).padStart(3, '0'),
-        name: name || null,
+        playerNumber: rollNo ? String(rollNo).padStart(3, '0') : null,
+        name: name ? String(name).trim() : null,
       }
-    })
+    }).filter(p => p.playerNumber && p.playerNumber !== 'NaN' && p.playerNumber !== 'undefined');
+
+    console.log(`Mapped ${playerEntries.length} valid entries. Ready for database sync.`);
 
     // Use a transaction for bulk upsert
     const result = await prisma.$transaction(async (tx) => {
       let updatedCount = 0
       
       for (const entry of playerEntries) {
-        if (!entry.playerNumber || entry.playerNumber === 'NaN' || entry.playerNumber === 'undefined') continue
+        if (!entry.playerNumber) continue;
 
         await tx.player.upsert({
           where: { playerNumber: entry.playerNumber },
@@ -37,34 +60,32 @@ export async function POST(req: NextRequest) {
           create: { 
             playerNumber: entry.playerNumber,
             name: entry.name,
-            isRegistered: false // New seeded players start as not registered
+            isRegistered: false 
           }
         })
         updatedCount++
 
-        // Also ensure RoundStatus entries exist for this player
+        // Ensure RoundStatus entries exist
         const player = await tx.player.findUnique({
           where: { playerNumber: entry.playerNumber },
           select: { id: true }
         })
 
         if (player) {
-          const rounds = ROUND_ORDER.map(round => ({
-            playerId: player.id,
-            round: round,
-            status: 'PENDING' as any
-          }))
-
-          for (const round of rounds) {
+          for (const round of ROUND_ORDER) {
             await tx.roundStatus.upsert({
               where: {
                 playerId_round: {
-                  playerId: round.playerId,
-                  round: round.round
+                  playerId: player.id,
+                  round: round
                 }
               },
-              update: {}, // Don't reset status if it already exists
-              create: round
+              update: {},
+              create: {
+                playerId: player.id,
+                round: round,
+                status: 'PENDING'
+              }
             })
           }
         }
@@ -75,7 +96,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ 
       success: true, 
       count: result,
-      message: `Successfully seeded ${result} players and initialized rounds.`
+      message: `Successfully processed ${result} players.`
     })
 
   } catch (error: any) {
