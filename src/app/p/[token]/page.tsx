@@ -1,125 +1,119 @@
-import React from 'react'
 import { prisma } from '@/lib/prisma'
-import { ROUND_ORDER, ROUND_LABELS } from '@/lib/constants'
-import { Check, X, ShieldAlert } from 'lucide-react'
+import { notFound } from 'next/navigation'
+import { ROUND_LABELS } from '@/lib/constants'
+import { Trophy, Shield, XCircle, Clock } from 'lucide-react'
 
-// This page is a server component, so we can fetch directly from Prisma if we want,
-// but since it's dynamic, we'll fetch inside the component to render it on the server.
-export default async function PublicPlayerPage({
-  params
-}: {
-  params: { token: string }
-}) {
+export const dynamic = 'force-dynamic'
+
+export default async function PublicPlayerProfile({ params }: { params: { token: string } }) {
+  const { token } = params
+
+  // 1. Try to find player by token
   const player = await prisma.player.findUnique({
-    where: { qrToken: params.token },
-    select: {
-      playerNumber: true,
-      name: true,
-      isRegistered: true,
-      photoUrl: true,
-      rounds: { 
-        select: { round: true, status: true } 
-      }
-    }
+    where: { qrToken: token },
+    include: { rounds: true }
   })
 
-  if (!player) {
+  // 2. If no player, check if it's a valid protocol token but not yet registered
+  const protocolToken = !player ? await prisma.protocolToken.findUnique({
+    where: { token }
+  }) : null
+
+  if (!player && !protocolToken) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center">
-        <ShieldAlert className="w-16 h-16 text-red-500 mb-4" />
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Invalid Token</h1>
-        <p className="text-muted-foreground mt-2">This player profile could not be found or the QR code is invalid.</p>
+      <div className="min-h-screen bg-[#051919] flex items-center justify-center p-6 text-center">
+        <div className="space-y-4">
+          <div className="w-20 h-20 border-2 border-red-600 flex items-center justify-center mx-auto mb-6 rotate-45">
+            <XCircle className="w-10 h-10 text-red-600 -rotate-45" />
+          </div>
+          <h1 className="text-2xl font-black text-white uppercase tracking-tighter">Unauthorized Token</h1>
+          <p className="text-red-900/60 font-bold uppercase tracking-widest text-xs">This QR code is not part of the Paradox Protocol.</p>
+        </div>
       </div>
     )
   }
 
-  const isEliminated = player.rounds.some(r => r.status === 'ELIMINATED')
-  const survivedCount = player.rounds.filter(r => r.status === 'SURVIVED').length
-
-  return (
-    <div className="min-h-screen bg-surface-2 flex flex-col p-4 md:p-8">
-      <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-xl font-black uppercase tracking-widest text-foreground">
-            Paradox 2025
-          </h1>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-1">
-            Participant Profile
+  if (protocolToken && !player) {
+    return (
+      <div className="min-h-screen bg-[#051919] flex items-center justify-center p-6 text-center">
+        <div className="space-y-6">
+          <div className="w-24 h-24 border-2 border-red-900/20 bg-red-950/10 flex items-center justify-center mx-auto mb-6 relative">
+             <div className="absolute inset-0 animate-pulse bg-red-600/5" />
+             <div className="text-red-900/40 font-black text-4xl">?</div>
+          </div>
+          <div>
+            <h1 className="text-3xl font-black text-white uppercase tracking-tighter">Unregistered Player</h1>
+            <p className="text-red-600 font-bold uppercase tracking-widest text-[10px] mt-2">Protocol Token Detected: Unassigned</p>
+          </div>
+          <p className="text-slate-500 text-xs max-w-xs mx-auto leading-relaxed">
+            This identity token has not been mapped to a participant yet. 
+            Please report to the registration desk to initialize your profile.
           </p>
         </div>
+      </div>
+    )
+  }
 
-        {/* Player Card */}
-        <div className="bg-surface border border-border rounded-2xl shadow-sm overflow-hidden flex-1 flex flex-col">
-          {/* Status Banner */}
-          <div className={`p-4 text-center border-b ${isEliminated ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
-            <p className={`text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 ${isEliminated ? 'text-red-700' : 'text-green-700'}`}>
-              {isEliminated ? <><X className="w-4 h-4" /> Eliminated</> : <><Check className="w-4 h-4" /> Surviving</>}
-            </p>
+  // Player exists! Show their status
+  const sortedRounds = player!.rounds.sort((a, b) => {
+    const order = ['PRELIMINARY', 'RED_LIGHT_GREEN_LIGHT', 'HITCH_HIKE', 'SOUL_SEEKERS', 'GLASS_BRIDGE', 'THE_WRIGHT_WAY', 'CHOCOLATE_CRUCIBLE']
+    return order.indexOf(a.round) - order.indexOf(b.round)
+  })
+
+  const isEliminated = player!.rounds.some(r => r.status === 'ELIMINATED')
+
+  return (
+    <div className="min-h-screen bg-[#051919] text-white p-6 pb-12">
+      <div className="max-w-md mx-auto space-y-8">
+        {/* Header */}
+        <div className="text-center pt-8">
+          <div className={`w-32 h-32 rounded-full mx-auto mb-6 p-1 border-4 ${isEliminated ? 'border-red-600/50' : 'border-green-500/50'} relative`}>
+            {player!.photoUrl ? (
+              <img src={player!.photoUrl} className={`w-full h-full rounded-full object-cover ${isEliminated ? 'grayscale sepia opacity-50' : ''}`} alt="" />
+            ) : (
+              <div className="w-full h-full rounded-full bg-red-950/20 flex items-center justify-center text-4xl font-black text-red-900">
+                #{player!.playerNumber}
+              </div>
+            )}
+            {isEliminated && (
+               <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="bg-red-600 text-white font-black text-xs px-3 py-1 uppercase tracking-[0.2em] -rotate-12 border-2 border-white">ELIMINATED</div>
+               </div>
+            )}
           </div>
+          <h1 className="text-3xl font-black uppercase tracking-tighter">{player!.name}</h1>
+          <p className="text-red-600 font-black tracking-[0.3em] uppercase text-xs mt-2">Player #{player!.playerNumber}</p>
+        </div>
 
-          <div className="p-6 flex-1 flex flex-col">
-            {/* Identity */}
-            <div className="flex flex-col items-center text-center space-y-4 mb-8">
-              <div className={`w-32 h-32 rounded-full border-4 border-surface-2 bg-surface-2 overflow-hidden ${isEliminated ? 'opacity-50 grayscale' : ''}`}>
-                {player.photoUrl ? (
-                  <img src={player.photoUrl} className="w-full h-full object-cover" alt="" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-3xl font-medium text-muted-foreground">
-                    {player.playerNumber.substring(0, 2)}
-                  </div>
-                )}
+        {/* Protocol Status */}
+        <div className="space-y-3">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-red-900/60 mb-4 border-b border-red-900/10 pb-2">Protocol Progression</h2>
+          
+          <div className="grid gap-2">
+            {sortedRounds.map((round) => (
+              <div key={round.id} className="bg-black/20 border border-red-900/10 p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{ROUND_LABELS[round.round]}</p>
+                  <p className={`text-xs font-bold mt-1 ${
+                    round.status === 'SURVIVED' ? 'text-green-500' : 
+                    round.status === 'ELIMINATED' ? 'text-red-600' : 'text-slate-400'
+                  }`}>
+                    {round.status}
+                  </p>
+                </div>
+                <div>
+                  {round.status === 'SURVIVED' && <Trophy className="w-5 h-5 text-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]" />}
+                  {round.status === 'ELIMINATED' && <XCircle className="w-5 h-5 text-red-600" />}
+                  {round.status === 'PENDING' && <Clock className="w-5 h-5 text-slate-700 animate-pulse" />}
+                </div>
               </div>
-              
-              <div>
-                <h2 className={`text-2xl font-bold tracking-tight ${isEliminated ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                  {player.name || `Player #${player.playerNumber}`}
-                </h2>
-                <p className="text-sm font-mono text-muted-foreground mt-1">
-                  ID: {player.playerNumber}
-                </p>
-              </div>
-              
-              {!player.isRegistered && (
-                <span className="badge-gray mt-2">Unregistered</span>
-              )}
-            </div>
-
-            {/* Progress */}
-            <div className="mt-auto">
-              <div className="flex justify-between text-sm font-medium mb-3">
-                <span className="text-muted-foreground">Round Progress</span>
-                <span className="text-foreground">{survivedCount} / 7</span>
-              </div>
-              
-              <div className="space-y-3">
-                {ROUND_ORDER.map((roundName, index) => {
-                  const r = player.rounds.find(r => r.round === roundName)
-                  const status = r?.status || 'PENDING'
-                  
-                  let badge = <span className="text-xs font-semibold px-2 py-1 rounded bg-surface-2 text-muted-foreground">Pending</span>
-                  if (status === 'SURVIVED') badge = <span className="text-xs font-semibold px-2 py-1 rounded bg-green-100 text-green-700">Pass</span>
-                  if (status === 'ELIMINATED') badge = <span className="text-xs font-semibold px-2 py-1 rounded bg-red-100 text-red-700">Fail</span>
-
-                  return (
-                    <div key={roundName} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                      <span className="text-sm font-medium text-muted-foreground">
-                        {index + 1}. {ROUND_LABELS[roundName as keyof typeof ROUND_LABELS]}
-                      </span>
-                      {badge}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-6">
-          <p className="text-xs text-muted-foreground">
-            Verified by Paradox Administration
-          </p>
+        <div className="text-center pt-12">
+          <p className="text-[9px] font-black uppercase tracking-[0.4em] text-red-900/30">Paradox Protocol © 2026</p>
         </div>
       </div>
     </div>

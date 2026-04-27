@@ -1,7 +1,13 @@
 import QRCode from 'qrcode'
 
 export async function generateQRBuffer(token: string): Promise<Buffer> {
-  const baseUrl = process.env.NEXTAUTH_URL || process.env.AUTH_URL || 'http://localhost:3000'
+  let baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || process.env.AUTH_URL || 'http://localhost:3000'
+  
+  // Use VERCEL_URL if available for production-ready URLs
+  if (process.env.VERCEL_URL && !process.env.NEXT_PUBLIC_APP_URL) {
+    baseUrl = `https://${process.env.VERCEL_URL}`
+  }
+
   // Remove trailing slash if present
   const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
   const url = `${cleanBaseUrl}/p/${token}`
