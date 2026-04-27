@@ -10,20 +10,40 @@ export function SquidHorrorTheme() {
   const whisperRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
-    // Ambient drone - Using your local file
-    ambientRef.current = new Audio('/audio/mingle_squid_game.mp3')
-    ambientRef.current.loop = true
-    ambientRef.current.volume = 0.25
+    // Initialize Audio objects once
+    const ambient = new Audio('/audio/mingle_squid_game.mp3')
+    ambient.loop = true
+    ambient.volume = 0.25
+    ambientRef.current = ambient
 
-    // Interaction click
-    clickRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3') // Soft mechanical click
-    clickRef.current.volume = 0.1
+    const click = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3')
+    click.volume = 0.1
+    clickRef.current = click
 
-    // Rare whisper
-    whisperRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2544/2544-preview.mp3') // Eerie whisper placeholder
-    whisperRef.current.volume = 0.05
+    const whisper = new Audio('https://assets.mixkit.co/active_storage/sfx/2544/2544-preview.mp3')
+    whisper.volume = 0.05
+    whisperRef.current = whisper
 
     // Global hover sound listener
+    const handleHover = (e: MouseEvent) => {
+      // Check if we are NOT muted before playing click
+      // We'll use a local check or just rely on the toggleMute state
+      // Actually, easier to check a ref or just use the current state if possible
+      // But since this effect runs once, we'll use a window variable or a ref for muted status
+    }
+
+    const whisperInterval = setInterval(() => {
+      // Logic for random whisper
+    }, 15000)
+
+    return () => {
+      ambient.pause()
+      clearInterval(whisperInterval)
+    }
+  }, [])
+
+  // Separate effect for muted status to handle global listeners and ambient play/pause
+  useEffect(() => {
     const handleHover = (e: MouseEvent) => {
       if (!isMuted && (e.target as HTMLElement).closest('a, button')) {
         clickRef.current?.play().catch(() => {})
@@ -31,30 +51,27 @@ export function SquidHorrorTheme() {
     }
 
     document.addEventListener('mouseover', handleHover)
-
-    // Random whisper trigger
+    
     const whisperInterval = setInterval(() => {
-      if (!isMuted && Math.random() > 0.95) {
+      if (!isMuted && Math.random() > 0.9) {
         whisperRef.current?.play().catch(() => {})
       }
-    }, 15000)
+    }, 12000)
+
+    if (!isMuted) {
+      ambientRef.current?.play().catch(() => {})
+    } else {
+      ambientRef.current?.pause()
+    }
 
     return () => {
-      ambientRef.current?.pause()
       document.removeEventListener('mouseover', handleHover)
       clearInterval(whisperInterval)
     }
   }, [isMuted])
 
   const toggleMute = () => {
-    if (ambientRef.current) {
-      if (isMuted) {
-        ambientRef.current.play().catch(() => {})
-      } else {
-        ambientRef.current.pause()
-      }
-    }
-    setIsMuted(!isMuted)
+    setIsMuted(prev => !prev)
   }
 
   return (
