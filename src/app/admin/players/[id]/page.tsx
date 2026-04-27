@@ -17,6 +17,7 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
   
   const webcamRef = React.useRef<Webcam>(null)
 
@@ -156,15 +157,23 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
                     audio={false}
                     ref={webcamRef}
                     screenshotFormat="image/jpeg"
-                    videoConstraints={{ facingMode: 'user', aspectRatio: 1 }}
+                    videoConstraints={{ facingMode: facingMode, aspectRatio: 1 }}
                     className="w-full h-full object-cover"
                   />
-                  <button 
-                    onClick={capture}
-                    className="absolute bottom-3 left-1/2 -translate-x-1/2 h-btn-small shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Camera className="w-3.5 h-3.5 mr-1.5" /> Capture
-                  </button>
+                  <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => setFacingMode(prev => prev === 'user' ? 'environment' : 'user')}
+                      className="h-btn-small bg-white/90 text-foreground shadow-md hover:bg-white"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5 mr-1" /> Flip
+                    </button>
+                    <button 
+                      onClick={capture}
+                      className="h-btn-small shadow-lg"
+                    >
+                      <Camera className="w-3.5 h-3.5 mr-1.5" /> Capture
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

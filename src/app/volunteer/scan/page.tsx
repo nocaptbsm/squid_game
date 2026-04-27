@@ -13,6 +13,7 @@ export default function VolunteerScanPage() {
   const [name, setName] = useState('')
   const [registering, setRegistering] = useState(false)
   const [registered, setRegistered] = useState(false)
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
   const webcamRef = useRef<Webcam>(null)
 
   const handleScan = async (rawValue: string) => {
@@ -167,12 +168,20 @@ export default function VolunteerScanPage() {
                       audio={false}
                       ref={webcamRef}
                       screenshotFormat="image/jpeg"
-                      videoConstraints={{ facingMode: 'user', aspectRatio: 1 }}
+                      videoConstraints={{ facingMode: facingMode, aspectRatio: 1 }}
                       className="w-full h-full object-cover"
                     />
-                    <button onClick={capture} className="absolute bottom-4 left-1/2 -translate-x-1/2 h-btn shadow-md">
-                      <Camera className="w-4 h-4 mr-2" /> Capture
-                    </button>
+                    <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3 px-4">
+                      <button 
+                        onClick={() => setFacingMode(prev => prev === 'user' ? 'environment' : 'user')}
+                        className="h-btn-small bg-white/90 text-foreground shadow-md hover:bg-white"
+                      >
+                        <RefreshCw className="w-4 h-4 mr-2" /> Flip
+                      </button>
+                      <button onClick={capture} className="h-btn shadow-md">
+                        <Camera className="w-4 h-4 mr-2" /> Capture
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
