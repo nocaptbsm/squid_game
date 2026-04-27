@@ -64,11 +64,12 @@ export async function PATCH(
     }
 
     const data = await request.json()
-    const { name, photoBase64, photoLocked, roundOverrides } = data
+    const { name, photoBase64, photoLocked, isRegistered, roundOverrides } = data
 
     const updateData: any = {}
     if (name !== undefined) updateData.name = name
     if (photoLocked !== undefined) updateData.photoLocked = photoLocked
+    if (isRegistered !== undefined) updateData.isRegistered = isRegistered
 
     if (photoBase64) {
       const player = await prisma.player.findUnique({ where: { id: params.id } })

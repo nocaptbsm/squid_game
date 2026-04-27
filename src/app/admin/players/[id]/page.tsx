@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Trash2, Save } from 'lucide-react'
+import Webcam from 'react-webcam'
+import { ArrowLeft, Trash2, Save, Camera, RefreshCw } from 'lucide-react'
 import { ROUND_ORDER, ROUND_LABELS } from '@/lib/constants'
 
 export default function EditPlayerPage({ params }: { params: { id: string } }) {
@@ -11,9 +12,13 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
   const [player, setPlayer] = useState<any>(null)
   const [name, setName] = useState('')
   const [rounds, setRounds] = useState<any[]>([])
+  const [isRegistered, setIsRegistered] = useState(false)
+  const [photo, setPhoto] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  
+  const webcamRef = React.useRef<Webcam>(null)
 
   useEffect(() => {
     fetch(`/api/players/${params.id}`)
@@ -22,9 +27,15 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
         setPlayer(data)
         setName(data.name || '')
         setRounds(data.rounds || [])
+        setIsRegistered(data.isRegistered)
         setLoading(false)
       })
   }, [params.id])
+
+  const capture = React.useCallback(() => {
+    const imageSrc = webcamRef.current?.getScreenshot()
+    if (imageSrc) setPhoto(imageSrc)
+  }, [webcamRef])
 
   const handleSave = async () => {
     setSaving(true)
@@ -33,7 +44,12 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
       const res = await fetch(`/api/players/${params.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, roundOverrides: rounds })
+        body: JSON.stringify({ 
+          name, 
+          isRegistered,
+          photoBase64: photo,
+          roundOverrides: rounds 
+        })
       })
       if (res.ok) {
         setMessage({ type: 'success', text: 'Record updated successfully.' })
@@ -99,16 +115,58 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
               : <div className="w-full h-full flex items-center justify-center text-sm font-medium text-muted-foreground">No Photo</div>
             }
           </div>
-          <div className="flex-1 space-y-4 w-full">
+          <div className="flex-1 space-y-5 w-full">
             <div>
               <label className="h-label">Display Name</label>
               <input type="text" value={name} onChange={e => setName(e.target.value)} className="h-input max-w-sm" placeholder="Participant Name" />
             </div>
+            
             <div>
-              <label className="h-label mb-1.5">Status</label>
-              <div className="inline-block">
-                {player.isRegistered ? <span className="badge-green">Registered</span> : <span className="badge-gray">Pending</span>}
+              <label className="h-label mb-2">Registration Status</label>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setIsRegistered(!isRegistered)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+                    isRegistered 
+                      ? 'bg-green-100 text-green-700 border border-green-200' 
+                      : 'bg-gray-100 text-gray-700 border border-gray-200'
+                  }`}
+                >
+                  {isRegistered ? 'REGISTERED' : 'PENDING'}
+                </button>
+                <span className="text-xs text-muted-foreground">Click to toggle</span>
               </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="h-label">Capture / Update Photo</label>
+              {photo ? (
+                <div className="relative w-48 aspect-square rounded-xl overflow-hidden border border-border shadow-sm">
+                  <img src={photo} alt="New" className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => setPhoto(null)}
+                    className="absolute bottom-2 right-2 p-2 bg-white/90 text-foreground rounded-full shadow-md hover:bg-white transition-colors"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="relative w-48 aspect-square rounded-xl overflow-hidden border border-border bg-surface-2 group">
+                  <Webcam
+                    audio={false}
+                    ref={webcamRef}
+                    screenshotFormat="image/jpeg"
+                    videoConstraints={{ facingMode: 'user', aspectRatio: 1 }}
+                    className="w-full h-full object-cover"
+                  />
+                  <button 
+                    onClick={capture}
+                    className="absolute bottom-3 left-1/2 -translate-x-1/2 h-btn-small shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Camera className="w-3.5 h-3.5 mr-1.5" /> Capture
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
