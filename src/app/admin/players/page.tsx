@@ -302,12 +302,27 @@ function PlayersListContent() {
                       </button>
                     </td>
                     <td className="px-6 py-4">
-                      {!player.isRegistered
-                        ? <span className="badge-gray">Pending</span>
-                        : isEliminated
-                          ? <span className="badge-red">Eliminated</span>
-                          : <span className="badge-green">Surviving</span>
-                      }
+                      {!player.isRegistered ? (
+                        <span className="badge-gray">Pending</span>
+                      ) : (() => {
+                        const eliminatedRound = player.rounds.find((r: any) => r.status === 'ELIMINATED')
+                        if (eliminatedRound) {
+                          const roundIdx = ROUND_ORDER.indexOf(eliminatedRound.round) + 1
+                          return <span className="badge-red">Eliminated (R{roundIdx})</span>
+                        }
+                        
+                        const passedRounds = player.rounds.filter((r: any) => r.status === 'SURVIVED')
+                        if (passedRounds.length > 0) {
+                          // Find the latest passed round by index
+                          const latestRound = passedRounds.reduce((latest: any, current: any) => {
+                            return ROUND_ORDER.indexOf(current.round) > ROUND_ORDER.indexOf(latest.round) ? current : latest
+                          })
+                          const roundIdx = ROUND_ORDER.indexOf(latestRound.round) + 1
+                          return <span className="badge-green">Surviving (Passed R{roundIdx})</span>
+                        }
+                        
+                        return <span className="badge-green">Surviving (Ready)</span>
+                      })()}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Link
