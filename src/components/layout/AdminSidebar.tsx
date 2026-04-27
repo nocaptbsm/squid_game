@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Printer, Settings, LogOut, ChevronLeft, Menu } from 'lucide-react'
+import { LayoutDashboard, Users, Printer, Settings, LogOut, ChevronLeft, Menu, Trophy, Upload, Target, Footprints, Timer, Bridge, Route, Flame } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { Logo } from './Logo'
 
@@ -19,10 +19,23 @@ export function AdminSidebar() {
     setIsCollapsed(true)
   }, [pathname])
 
+  const [isRoundsExpanded, setIsRoundsExpanded] = React.useState(false)
+
   const links = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/players', label: 'Players', icon: Users },
     { href: '/admin/print-cards', label: 'Print Cards', icon: Printer },
+  ]
+
+  const roundLinks = [
+    { href: '/admin/rounds/upload', label: 'Upload Players', icon: Upload },
+    { href: '/admin/rounds/preliminary', label: 'Treasure Hunt', icon: Target },
+    { href: '/admin/rounds/rlgl', label: 'Red Light Green Light', icon: Timer },
+    { href: '/admin/rounds/hitch-hike', icon: Footprints, label: 'Hitch Hike' },
+    { href: '/admin/rounds/90s-collapse', label: '90s Collapse', icon: Timer },
+    { href: '/admin/rounds/glass-bridge', label: 'Glass Bridge', icon: Bridge },
+    { href: '/admin/rounds/wright-way', label: 'The Wright Way', icon: Route },
+    { href: '/admin/rounds/chocolate', label: 'Chocolate Crucible', icon: Flame },
   ]
 
   return (
@@ -68,23 +81,22 @@ export function AdminSidebar() {
           </button>
         </div>
 
-        <nav className="flex-1 py-8 px-3 space-y-2 relative z-10">
+        <nav className="flex-1 py-8 px-3 space-y-1 relative z-10 overflow-y-auto custom-scrollbar">
           {links.map((link) => {
-            const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`) && link.href !== '/admin'
-            const exactActive = link.href === '/admin' ? pathname === '/admin' : isActive
+            const isActive = pathname === link.href
             const Icon = link.icon
             return (
               <Link
                 key={link.href}
                 href={link.href}
                 className={`flex items-center gap-3 px-3 py-3 rounded-none text-sm font-bold transition-all group border-l-2 ${
-                  exactActive 
+                  isActive 
                     ? 'bg-red-500/10 text-white border-red-500 shadow-[0_0_15px_rgba(227,27,109,0.1)]' 
                     : 'text-slate-500 border-transparent hover:bg-red-900/5 hover:text-red-400'
                 } ${isCollapsed ? 'justify-center px-0 border-l-0 border-b-2' : ''}`}
                 title={isCollapsed ? link.label : ''}
               >
-                <Icon className={`w-5 h-5 flex-shrink-0 transition-all ${exactActive ? 'scale-110 text-red-500' : 'group-hover:scale-110 group-hover:text-red-400'}`} />
+                <Icon className={`w-5 h-5 flex-shrink-0 transition-all ${isActive ? 'scale-110 text-red-500' : 'group-hover:scale-110 group-hover:text-red-400'}`} />
                 {!isCollapsed && (
                   <span className="animate-in fade-in slide-in-from-left-2 duration-300 tracking-widest uppercase text-[11px]">
                     {link.label}
@@ -93,6 +105,42 @@ export function AdminSidebar() {
               </Link>
             )
           })}
+
+          {/* Rounds Section */}
+          <div className="pt-4">
+            <button
+              onClick={() => setIsRoundsExpanded(!isRoundsExpanded)}
+              className={`flex items-center gap-3 w-full px-3 py-3 rounded-none text-sm font-bold transition-all group border-l-2 border-transparent text-slate-500 hover:bg-red-900/5 hover:text-red-400 ${isCollapsed ? 'justify-center px-0' : ''}`}
+            >
+              <Trophy className="w-5 h-5 flex-shrink-0 transition-all group-hover:scale-110 group-hover:text-red-400" />
+              {!isCollapsed && (
+                <span className="flex-1 text-left tracking-widest uppercase text-[11px]">Rounds</span>
+              )}
+            </button>
+
+            {isRoundsExpanded && !isCollapsed && (
+              <div className="mt-1 ml-4 space-y-1 border-l border-red-900/20 pl-2">
+                {roundLinks.map((link) => {
+                  const isActive = pathname === link.href
+                  const Icon = link.icon
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-none text-[10px] font-bold transition-all group border-l-2 ${
+                        isActive 
+                          ? 'bg-red-500/5 text-white border-red-500' 
+                          : 'text-slate-600 border-transparent hover:bg-red-900/5 hover:text-red-400'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 flex-shrink-0 transition-all ${isActive ? 'text-red-500' : 'group-hover:text-red-400'}`} />
+                      <span className="tracking-widest uppercase truncate">{link.label}</span>
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         </nav>
 
         <div className="p-4 border-t border-red-900/20 relative z-10">
