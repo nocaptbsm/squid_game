@@ -302,47 +302,45 @@ function PlayersListContent() {
                       </button>
                     </td>
                     <td className="px-6 py-4">
-                      {!player.isRegistered ? (
-                        <span className="badge-gray">Pending</span>
-                      ) : (
-                        <div className="space-y-2">
-                          {/* Round progress rectangles */}
-                          <div className="flex gap-1">
-                            {ROUND_ORDER.map((roundName) => {
-                              const r = player.rounds.find((r: any) => r.round === roundName)
-                              const status = r?.status || 'PENDING'
-                              return (
-                                <div
-                                  key={roundName}
-                                  className={`w-4 h-2 rounded-sm border ${
-                                    status === 'SURVIVED'
-                                      ? 'bg-green-500 border-green-600'
-                                      : status === 'ELIMINATED'
-                                      ? 'bg-red-500 border-red-600'
-                                      : 'bg-surface-2 border-border'
-                                  }`}
-                                  title={ROUND_LABELS[roundName as keyof typeof ROUND_LABELS]}
-                                />
-                              )
-                            })}
-                          </div>
-                          
-                          {/* Text status */}
-                          <div className="text-[10px] font-bold uppercase tracking-wider">
-                            {(() => {
-                              const eliminatedRound = player.rounds.find((r: any) => r.status === 'ELIMINATED')
-                              if (eliminatedRound) {
-                                const roundIdx = ROUND_ORDER.indexOf(eliminatedRound.round) + 1
-                                return <span className="text-red-500">Eliminated (R{roundIdx})</span>
-                              }
-                              const passedCount = player.rounds.filter((r: any) => r.status === 'SURVIVED').length
-                              if (passedCount === 7) return <span className="text-primary font-black">Winner!</span>
-                              if (passedCount > 0) return <span className="text-green-600">Surviving (R{passedCount})</span>
-                              return <span className="text-muted-foreground">Ready</span>
-                            })()}
-                          </div>
+                      <div className="space-y-2">
+                        {/* Round progress rectangles */}
+                        <div className="flex gap-1">
+                          {ROUND_ORDER.map((roundName) => {
+                            const r = player.rounds.find((r: any) => r.round === roundName)
+                            const status = r?.status || 'PENDING'
+                            return (
+                              <div
+                                key={roundName}
+                                className={`w-4 h-2 rounded-sm border ${
+                                  status === 'SURVIVED'
+                                    ? 'bg-green-500 border-green-600'
+                                    : status === 'ELIMINATED'
+                                    ? 'bg-red-500 border-red-600'
+                                    : 'bg-surface-2 border-border'
+                                }`}
+                                title={ROUND_LABELS[roundName as keyof typeof ROUND_LABELS]}
+                              />
+                            )
+                          })}
                         </div>
-                      )}
+                        
+                        {/* Text status */}
+                        <div className="text-[10px] font-bold uppercase tracking-wider">
+                          {(() => {
+                            if (!player.isRegistered) return <span className="text-muted-foreground font-medium">Pending Registration</span>
+                            
+                            const eliminatedRound = player.rounds.find((r: any) => r.status === 'ELIMINATED')
+                            if (eliminatedRound) {
+                              const roundIdx = ROUND_ORDER.indexOf(eliminatedRound.round) + 1
+                              return <span className="text-red-500">Eliminated (R{roundIdx})</span>
+                            }
+                            const passedCount = player.rounds.filter((r: any) => r.status === 'SURVIVED').length
+                            if (passedCount === 7) return <span className="text-primary font-black">Winner!</span>
+                            if (passedCount > 0) return <span className="text-green-600">Surviving (R{passedCount})</span>
+                            return <span className="text-muted-foreground">Ready to start</span>
+                          })()}
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Link
