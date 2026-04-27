@@ -109,7 +109,10 @@ export function AdminSidebar() {
           {/* Rounds Section */}
           <div className="pt-4">
             <button
-              onClick={() => setIsRoundsExpanded(!isRoundsExpanded)}
+              onClick={() => {
+                setIsRoundsExpanded(!isRoundsExpanded)
+                if (isCollapsed) setIsCollapsed(false)
+              }}
               className={`flex items-center gap-3 w-full px-3 py-3 rounded-none text-sm font-bold transition-all group border-l-2 border-transparent text-slate-500 hover:bg-red-900/5 hover:text-red-400 ${isCollapsed ? 'justify-center px-0' : ''}`}
             >
               <Trophy className="w-5 h-5 flex-shrink-0 transition-all group-hover:scale-110 group-hover:text-red-400" />
