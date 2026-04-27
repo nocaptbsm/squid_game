@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Printer, Settings, LogOut, ChevronLeft, Menu, Trophy, Upload, Target, Footprints, Timer, Bridge, Route, Flame } from 'lucide-react'
+import { LayoutDashboard, Users, Printer, Settings, LogOut, ChevronLeft, Menu, Trophy, Upload, Target, Footprints, Timer, Box, Route, Flame } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { Logo } from './Logo'
 
@@ -33,7 +33,7 @@ export function AdminSidebar() {
     { href: '/admin/rounds/rlgl', label: 'Red Light Green Light', icon: Timer },
     { href: '/admin/rounds/hitch-hike', icon: Footprints, label: 'Hitch Hike' },
     { href: '/admin/rounds/90s-collapse', label: '90s Collapse', icon: Timer },
-    { href: '/admin/rounds/glass-bridge', label: 'Glass Bridge', icon: Bridge },
+    { href: '/admin/rounds/glass-bridge', label: 'Glass Bridge', icon: Box },
     { href: '/admin/rounds/wright-way', label: 'The Wright Way', icon: Route },
     { href: '/admin/rounds/chocolate', label: 'Chocolate Crucible', icon: Flame },
   ]
