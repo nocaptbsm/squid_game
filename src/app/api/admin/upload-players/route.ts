@@ -11,46 +11,65 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No player data provided' }, { status: 400 })
     }
 
-    // Prepare players for insertion
-    // Each player needs a unique qrToken
-    const playerEntries = players.map((p: any) => ({
-      playerNumber: String(p.rollNo || p.playerNumber).padStart(3, '0'),
-      name: p.name,
-    }))
+    // Prepare players for insertion with flexible header mapping
+    const playerEntries = players.map((p: any) => {
+      // Find name field (handle Name, name, full name, student name, etc.)
+      const name = p.name || p.Name || p['Full Name'] || p['Student Name'] || p['player name']
+      // Find roll number (handle rollNo, roll no, playerNumber, player number, id, etc.)
+      const rollNo = p.rollNo || p.rollno || p['Roll No'] || p['roll no'] || p.playerNumber || p.id || p.ID
 
-    // Use a transaction for bulk insertion
+      return {
+        playerNumber: String(rollNo).padStart(3, '0'),
+        name: name || null,
+      }
+    })
+
+    // Use a transaction for bulk upsert
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Create players (use createMany for speed if supported, otherwise loop)
-      // Note: PostgreSQL supports createMany
-      await tx.player.createMany({
-        data: playerEntries,
-        skipDuplicates: true, // Safety against re-uploading same roll numbers
-      })
+      let updatedCount = 0
+      
+      for (const entry of playerEntries) {
+        if (!entry.playerNumber || entry.playerNumber === 'NaN' || entry.playerNumber === 'undefined') continue
 
-      // 2. Fetch the newly created players to get their DB IDs
-      // We need IDs to create the RoundStatus records
-      const createdPlayers = await tx.player.findMany({
-        where: {
-          playerNumber: { in: playerEntries.map(p => p.playerNumber) }
-        },
-        select: { id: true }
-      })
+        await tx.player.upsert({
+          where: { playerNumber: entry.playerNumber },
+          update: { name: entry.name },
+          create: { 
+            playerNumber: entry.playerNumber,
+            name: entry.name,
+            isRegistered: false // New seeded players start as not registered
+          }
+        })
+        updatedCount++
 
-      // 3. Initialize RoundStatus for all 7 rounds for each player
-      const roundStatusEntries = createdPlayers.flatMap(player => 
-        ROUND_ORDER.map(round => ({
-          playerId: player.id,
-          round: round,
-          status: 'PENDING' as any
-        }))
-      )
+        // Also ensure RoundStatus entries exist for this player
+        const player = await tx.player.findUnique({
+          where: { playerNumber: entry.playerNumber },
+          select: { id: true }
+        })
 
-      await tx.roundStatus.createMany({
-        data: roundStatusEntries,
-        skipDuplicates: true,
-      })
+        if (player) {
+          const rounds = ROUND_ORDER.map(round => ({
+            playerId: player.id,
+            round: round,
+            status: 'PENDING' as any
+          }))
 
-      return createdPlayers.length
+          for (const round of rounds) {
+            await tx.roundStatus.upsert({
+              where: {
+                playerId_round: {
+                  playerId: round.playerId,
+                  round: round.round
+                }
+              },
+              update: {}, // Don't reset status if it already exists
+              create: round
+            })
+          }
+        }
+      }
+      return updatedCount
     })
 
     return NextResponse.json({ 

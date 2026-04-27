@@ -322,13 +322,13 @@ export default function AdminDashboard() {
                       <span className="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">{player.name || 'UNREGISTERED'}</span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      {player.qrToken ? (
+                      {player.isRegistered ? (
                         <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 bg-green-500/10 text-green-500 border border-green-500/20">
-                          QR ALLOCATED
+                          REGISTERED
                         </span>
                       ) : (
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
-                          UNALLOCATED
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest px-2 py-1 bg-red-950/20 text-red-900 border border-red-900/10">
+                          PENDING
                         </span>
                       )}
                     </td>
