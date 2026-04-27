@@ -15,8 +15,6 @@ export function AdminSidebar() {
   // Auto-collapse on mobile when navigating
   React.useEffect(() => {
     setIsMobileOpen(false)
-    // Auto-minimize on selection as requested
-    setIsCollapsed(true)
   }, [pathname])
 
   const [isRoundsExpanded, setIsRoundsExpanded] = React.useState(false)
@@ -24,7 +22,7 @@ export function AdminSidebar() {
   const links = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/players', label: 'Players', icon: Users },
-    { href: '/admin/protocol-qrs', label: 'Protocol QRs', icon: Box },
+    { href: '/admin/protocol-qrs', label: 'Protocol QRs (350)', icon: Box },
   ]
 
   const roundLinks = [
