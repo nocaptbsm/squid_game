@@ -23,6 +23,23 @@ export async function POST(request: Request) {
     })
 
     if (!player) {
+      // Check if it's a valid unassigned Protocol Token
+      const protocolToken = await prisma.protocolToken.findUnique({
+        where: { token: qrToken }
+      })
+
+      if (!protocolToken) {
+        return NextResponse.json({ 
+          error: 'Unauthorized QR code. This token is not part of the Paradox Protocol.' 
+        }, { status: 404 })
+      }
+
+      if (protocolToken.isUsed) {
+        return NextResponse.json({ 
+          error: 'This QR code has already been assigned to another student.' 
+        }, { status: 400 })
+      }
+
       return NextResponse.json({ 
         isUnassigned: true, 
         qrToken,

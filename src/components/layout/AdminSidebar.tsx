@@ -24,6 +24,7 @@ export function AdminSidebar() {
   const links = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/players', label: 'Players', icon: Users },
+    { href: '/admin/protocol-qrs', label: 'Protocol QRs', icon: Box },
   ]
 
   const roundLinks = [

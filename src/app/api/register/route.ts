@@ -58,6 +58,12 @@ export async function POST(request: Request) {
       }
     })
 
+    // Mark the protocol token as used
+    await prisma.protocolToken.update({
+      where: { token: qrToken },
+      data: { isUsed: true }
+    })
+
     await prisma.scan.create({
       data: {
         playerId: player.id,

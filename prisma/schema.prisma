@@ -61,6 +61,13 @@ model TeamLogin {
   pin      String // 4-digit hashed PIN for player self-view
 }
 
+model ProtocolToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
 enum Role {
   ADMIN
   VOLUNTEER
