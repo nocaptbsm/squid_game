@@ -4,7 +4,6 @@ import Link from 'next/link'
 const portals = [
   { href: '/admin/login', label: 'Admin Portal', desc: 'Manage players, rounds, and system settings.' },
   { href: '/volunteer/login', label: 'Volunteer Portal', desc: 'Scan players and verify round statuses.' },
-  { href: '/player/login', label: 'Player Portal', desc: 'View your live status and game progress.' },
 ]
 
 export default function LandingPage() {
@@ -22,7 +21,7 @@ export default function LandingPage() {
         </div>
 
         {/* Portal Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
           {portals.map((portal) => (
             <Link 
               key={portal.href} 
