@@ -49,7 +49,7 @@ export default function VolunteerRoundPage() {
       const res = await fetch('/api/rounds', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ qrToken: player.qrToken, roundName: selectedRound, status })
+        body: JSON.stringify({ playerId: player.id, round: selectedRound, status })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Update failed')
