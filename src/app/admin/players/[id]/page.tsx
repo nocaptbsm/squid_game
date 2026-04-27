@@ -200,7 +200,7 @@ export default function EditPlayerPage({ params }: { params: { id: string } }) {
 
       <div className="flex justify-between items-center pt-2">
         <button onClick={handleDelete} className="flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 px-3 py-2 rounded-md hover:bg-red-50 transition-colors">
-          <Trash2 className="w-4 h-4" /> Delete Player
+          <RefreshCw className="w-4 h-4" /> Reset Player Data
         </button>
         <button onClick={handleSave} disabled={saving} className="h-btn flex items-center gap-2">
           <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Changes'}

@@ -119,15 +119,31 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Hard delete with cascade
+    // Instead of deleting the Player, we "reset" them so the ID and QR remain
     await prisma.$transaction([
+      // 1. Delete associated data
       prisma.scan.deleteMany({ where: { playerId: params.id } }),
-      prisma.roundStatus.deleteMany({ where: { playerId: params.id } }),
       prisma.teamLogin.deleteMany({ where: { playerId: params.id } }),
-      prisma.player.delete({ where: { id: params.id } })
+      
+      // 2. Reset all rounds to PENDING
+      prisma.roundStatus.updateMany({
+        where: { playerId: params.id },
+        data: { status: 'PENDING', updatedBy: null }
+      }),
+      
+      // 3. Clear player registration info
+      prisma.player.update({
+        where: { id: params.id },
+        data: {
+          name: null,
+          photoUrl: null,
+          isRegistered: false,
+          photoLocked: false
+        }
+      })
     ])
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, message: 'Player reset successful' })
   } catch (error) {
     console.error('Delete player error:', error)
     return NextResponse.json({ error: 'Failed to delete player' }, { status: 500 })
