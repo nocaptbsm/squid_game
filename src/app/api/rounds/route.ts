@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Player eliminated in this round' }, { status: 403 })
     }
 
-    const updatedRound = await prisma.roundStatus.update({
+    await prisma.roundStatus.update({
       where: {
         playerId_round: {
           playerId,
@@ -45,7 +45,12 @@ export async function POST(request: Request) {
       }
     })
 
-    return NextResponse.json(updatedRound)
+    const updatedPlayer = await prisma.player.findUnique({
+      where: { id: playerId },
+      include: { rounds: true }
+    })
+
+    return NextResponse.json({ success: true, player: updatedPlayer })
   } catch (error) {
     console.error('Round update error:', error)
     return NextResponse.json({ error: 'Failed to update round' }, { status: 500 })
