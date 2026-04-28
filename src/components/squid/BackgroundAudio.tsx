@@ -48,23 +48,25 @@ export function BackgroundAudio() {
   }, [isMuted])
 
   return (
-    <div className="fixed bottom-6 right-6 z-[1000]">
-      <button
-        onClick={() => setIsMuted(!isMuted)}
-        className={`p-4 rounded-full shadow-2xl transition-all duration-500 border ${
-          isMuted 
-            ? 'bg-black/80 text-white border-red-900/50 hover:bg-black' 
-            : 'bg-red-600 text-white border-white/20 animate-pulse'
-        }`}
-        title={isMuted ? 'Unmute Background Music' : 'Mute Background Music'}
-      >
-        {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-      </button>
-      {!isMuted && (
-        <div className="absolute -top-12 right-0 bg-red-600 text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 whitespace-nowrap animate-in fade-in slide-in-from-bottom-2">
-          Protocol Audio Active
-        </div>
-      )}
+    <div className="fixed bottom-24 right-6 z-[1000]">
+      <div className="flex flex-col items-end gap-2">
+        {!isMuted && (
+          <div className="bg-red-600 text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 animate-in fade-in slide-in-from-bottom-2 shadow-[0_0_15px_rgba(220,38,38,0.5)]">
+            Music Active
+          </div>
+        )}
+        <button
+          onClick={() => setIsMuted(!isMuted)}
+          className={`p-4 rounded-full shadow-2xl transition-all duration-500 border ${
+            isMuted 
+              ? 'bg-black/80 text-white border-red-900/50 hover:bg-black' 
+              : 'bg-red-600 text-white border-white/20 animate-pulse scale-110'
+          }`}
+          title={isMuted ? 'Play Protocol Music' : 'Stop Protocol Music'}
+        >
+          {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+        </button>
+      </div>
     </div>
   )
 }
