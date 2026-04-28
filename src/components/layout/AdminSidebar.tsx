@@ -56,11 +56,10 @@ export function AdminSidebar() {
         />
       )}
 
-      {/* Sidebar Container */}
       <div className={`
         ${isCollapsed ? 'w-20' : 'w-64'} 
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-        bg-[#051919] border-r border-red-900/20 min-h-screen flex flex-col fixed md:relative z-50 transition-all duration-300 ease-in-out shadow-[10px_0_30px_rgba(0,0,0,0.5)]
+        bg-[#020202] border-r border-red-900/40 min-h-screen flex flex-col fixed md:relative z-50 transition-all duration-300 ease-in-out shadow-[20px_0_40px_rgba(0,0,0,0.9)]
       `}>
         {/* Grain Overlay for Sidebar */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
