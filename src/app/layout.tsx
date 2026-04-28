@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { SquidHorrorTheme } from "@/components/squid/SquidHorrorTheme";
+import { AudioSync } from "@/components/squid/AudioSync";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,6 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} font-sans min-h-screen bg-background text-foreground antialiased`}>
         <SquidHorrorTheme />
+        <AudioSync />
         {children}
       </body>
     </html>
