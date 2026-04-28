@@ -47,10 +47,21 @@ export function BackgroundAudio() {
     }
   }, [isMuted])
 
+  const toggleMute = () => {
+    const nextMuted = !isMuted
+    setIsMuted(nextMuted)
+    window.dispatchEvent(new CustomEvent('paradox-audio-toggle', { detail: { isMuted: nextMuted } }))
+  }
+
+  // Sync on mount
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('paradox-audio-toggle', { detail: { isMuted } }))
+  }, [])
+
   return (
     <div className="fixed bottom-6 right-6 z-[1000]">
       <button
-        onClick={() => setIsMuted(!isMuted)}
+        onClick={toggleMute}
         className={`p-4 rounded-full shadow-2xl transition-all duration-500 border ${
           isMuted 
             ? 'bg-black/80 text-white border-red-900/50 hover:bg-black' 
