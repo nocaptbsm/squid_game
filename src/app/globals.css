@@ -4,187 +4,215 @@
 
 @layer base {
   :root {
-    --background: 0 0% 2%; /* Deep Obsidian */
-    --foreground: 0 0% 98%;
+    --background: 180 62% 6%; /* #051919 - Dark Teal */
+    --foreground: 0 0% 95%; /* Off-white */
     
-    --card: 0 0% 4%;
-    --card-foreground: 0 0% 98%;
+    --card: 180 40% 8%; /* Slightly lighter teal */
+    --card-foreground: 0 0% 95%;
     
-    --primary: 340 100% 50%; /* Visceral Blood Pink */
+    --popover: 180 40% 8%;
+    --popover-foreground: 0 0% 95%;
+    
+    --primary: 340 79% 50%; /* #E31B6D - Guard Pink */
     --primary-foreground: 0 0% 100%;
     
-    --muted: 0 0% 8%;
-    --muted-foreground: 0 0% 40%;
+    --secondary: 180 20% 12%;
+    --secondary-foreground: 340 79% 50%;
     
-    --accent: 340 100% 50%;
+    --muted: 180 20% 12%;
+    --muted-foreground: 180 10% 60%;
+    
+    --accent: 340 79% 50%;
     --accent-foreground: 0 0% 100%;
     
-    --border: 0 100% 10% / 0.5;
-    --radius: 0rem;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
 
-    /* Horror Specific Tokens */
-    --horror-red: #ff0055;
-    --horror-teal: #00ffd5;
-    --horror-dark: #050505;
-    --blood-glow: 0 0 20px rgba(255, 0, 85, 0.4);
+    --border: 180 20% 15%;
+    --input: 180 20% 15%;
+    --ring: 340 79% 50%;
+
+    --radius: 0rem; /* Sharp edges for horror feel */
+
+    /* SaaS tokens */
+    --s-bg: #051919;
+    --s-surface: #0a2424;
+    --s-surface-2: #0f3030;
+    --s-border: rgba(227, 27, 109, 0.2);
+    --s-accent: #E31B6D;
+    --s-accent-hover: #C2165D;
+    --s-accent-light: rgba(227, 27, 109, 0.1);
+    --s-text: #F8FAFC;
+    --s-text-secondary: #94A3B8;
+    --s-text-muted: #475569;
+    --s-green: #10B981;
+    --s-green-light: rgba(16, 185, 129, 0.1);
+    --s-orange: #F59E0B;
+    --s-orange-light: rgba(245, 158, 11, 0.1);
+    --s-red: #E31B6D;
+    --s-red-light: rgba(227, 27, 109, 0.1);
+
+    --s-shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+    --s-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    --s-shadow-md: 0 20px 40px -20px rgba(227,27,109,0.2);
   }
 }
 
 @layer base {
+  * {
+    @apply border-border;
+  }
   body {
-    @apply bg-background text-foreground overflow-x-hidden;
-    background-image: radial-gradient(circle at center, transparent 0%, #000 100%);
-    min-height: 100vh;
-  }
-
-  /* Scanline Overlay */
-  body::before {
-    content: " ";
-    display: block;
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    z-index: 1000;
-    background-size: 100% 3px, 3px 100%;
-    pointer-events: none;
-    opacity: 0.15;
-  }
-
-  /* Vignette */
-  body::after {
-    content: " ";
-    display: block;
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.8) 100%);
-    z-index: 1001;
-    pointer-events: none;
-    opacity: 0.7;
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
+/* Minimal utility classes replacing the horror ones */
 @layer utilities {
-  .horror-glitch {
+  .text-balance { text-wrap: balance; }
+
+  .h-card, .saas-card {
+    background: var(--s-surface);
+    border: 1px solid var(--s-border);
+    border-radius: var(--radius);
+    box-shadow: var(--s-shadow-sm);
     position: relative;
-    animation: glitch 10s infinite;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+  }
+  
+  .h-card:hover, .saas-card:hover {
+    box-shadow: var(--s-shadow);
   }
 
-  .horror-glitch::before, .horror-glitch::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0;
-    left: 0;
+  .h-input, .saas-input {
+    background: var(--s-surface);
+    border: 1px solid var(--s-border);
+    border-radius: calc(var(--radius) - 4px);
+    color: var(--s-text);
+    transition: all 0.2s ease;
     width: 100%;
-    height: 100%;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    outline: none;
+  }
+  
+  .h-input:focus, .saas-input:focus {
+    border-color: var(--s-accent);
+    box-shadow: 0 0 0 3px var(--s-accent-light);
   }
 
-  .horror-glitch::before {
-    left: 2px;
-    text-shadow: -2px 0 var(--horror-red);
-    clip: rect(44px, 450px, 56px, 0);
-    animation: glitch-anim 5s infinite linear alternate-reverse;
+  .h-btn, .saas-btn-primary {
+    background: var(--s-accent);
+    color: #ffffff;
+    border: none;
+    border-radius: calc(var(--radius) - 4px);
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    box-shadow: var(--s-shadow-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .h-btn:hover:not(:disabled), .saas-btn-primary:hover:not(:disabled) {
+    background: var(--s-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--s-shadow);
+  }
+  
+  .h-btn:disabled, .saas-btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
-  .horror-glitch::after {
-    left: -2px;
-    text-shadow: -2px 0 var(--horror-teal);
-    clip: rect(44px, 450px, 56px, 0);
-    animation: glitch-anim2 5s infinite linear alternate-reverse;
+  .h-btn-ghost, .saas-btn-ghost {
+    background: transparent;
+    color: var(--s-text-secondary);
+    border: 1px solid var(--s-border);
+    border-radius: calc(var(--radius) - 4px);
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .h-btn-ghost:hover {
+    background: var(--s-surface-2);
+    color: var(--s-text);
+    border-color: var(--s-text-muted);
   }
 
-  .h-card {
-    @apply bg-black/80 border-red-900/30 backdrop-blur-md;
-    border-width: 1px;
-    box-shadow: inset 0 0 20px rgba(0,0,0,1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  .h-btn-danger {
+    background: var(--s-red-light);
+    color: var(--s-red);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: calc(var(--radius) - 4px);
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .h-btn-danger:hover {
+    background: var(--s-red);
+    color: #ffffff;
   }
 
-  .h-card:hover {
-    @apply border-red-600/50;
-    box-shadow: 0 0 30px rgba(255, 0, 85, 0.1), inset 0 0 20px rgba(0,0,0,1);
+  .h-label, .saas-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--s-text-secondary);
+    margin-bottom: 0.375rem;
   }
 
-  .h-btn {
-    @apply bg-red-600 text-white font-black uppercase tracking-[0.2em] text-[10px] py-3 px-6 transition-all;
-    box-shadow: 0 0 15px rgba(220, 38, 38, 0.3);
+  .badge-green {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--s-green-light);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 9999px;
+    font-size: 0.75rem; font-weight: 500;
+    padding: 0.125rem 0.625rem;
   }
-
-  .h-btn:hover:not(:disabled) {
-    @apply bg-red-500 scale-[1.02];
-    box-shadow: 0 0 25px rgba(220, 38, 38, 0.5);
-    text-shadow: 0 0 10px rgba(255,255,255,0.5);
+  
+  .badge-orange {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--s-orange-light);
+    color: #D97706;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 9999px;
+    font-size: 0.75rem; font-weight: 500;
+    padding: 0.125rem 0.625rem;
   }
-
-  .h-input {
-    @apply bg-black/60 border-red-900/30 text-white font-mono text-xs p-3 outline-none transition-all;
+  
+  .badge-red {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--s-red-light);
+    color: #DC2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 9999px;
+    font-size: 0.75rem; font-weight: 500;
+    padding: 0.125rem 0.625rem;
   }
-
-  .h-input:focus {
-    @apply border-red-600 ring-0;
-    box-shadow: 0 0 20px rgba(255, 0, 85, 0.1);
+  
+  .badge-gray {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--s-surface-2);
+    color: var(--s-text-secondary);
+    border: 1px solid var(--s-border);
+    border-radius: 9999px;
+    font-size: 0.75rem; font-weight: 500;
+    padding: 0.125rem 0.625rem;
   }
-
-  .h-label {
-    @apply text-red-900/60 font-black uppercase tracking-[0.3em] text-[9px] mb-2 block;
-  }
-
-  .horror-pulse {
-    animation: horror-pulse 4s infinite;
-  }
-
-  .horror-border-glow {
-    box-shadow: 0 0 15px rgba(255, 0, 85, 0.2);
-  }
-}
-
-@keyframes glitch-anim {
-  0% { clip: rect(10px, 9999px, 20px, 0); }
-  20% { clip: rect(30px, 9999px, 40px, 0); }
-  40% { clip: rect(50px, 9999px, 60px, 0); }
-  60% { clip: rect(70px, 9999px, 80px, 0); }
-  80% { clip: rect(90px, 9999px, 100px, 0); }
-  100% { clip: rect(110px, 9999px, 120px, 0); }
-}
-
-@keyframes glitch-anim2 {
-  0% { clip: rect(15px, 9999px, 25px, 0); }
-  20% { clip: rect(35px, 9999px, 45px, 0); }
-  40% { clip: rect(55px, 9999px, 65px, 0); }
-  60% { clip: rect(75px, 9999px, 85px, 0); }
-  80% { clip: rect(95px, 9999px, 105px, 0); }
-  100% { clip: rect(115px, 9999px, 125px, 0); }
-}
-
-@keyframes horror-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(0.98); }
-}
-
-@keyframes glitch {
-  0%, 90% { transform: translate(0, 0); }
-  91% { transform: translate(-2px, 2px); }
-  92% { transform: translate(2px, -2px); }
-  93% { transform: translate(-2px, -2px); }
-  94% { transform: translate(2px, 2px); }
-  95%, 100% { transform: translate(0, 0); }
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 4px;
-}
-::-webkit-scrollbar-track {
-  background: #000;
-}
-::-webkit-scrollbar-thumb {
-  background: #330011;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #ff0055;
 }

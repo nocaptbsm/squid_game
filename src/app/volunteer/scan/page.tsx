@@ -136,170 +136,155 @@ export default function VolunteerScanPage() {
   }
 
   return (
-    <div className="max-w-sm mx-auto w-full space-y-8 pb-12">
-      <div className="text-center pt-8">
-        <h1 className="text-4xl font-black tracking-tighter text-white uppercase horror-glitch" data-text="REGISTRATION">REGISTRATION</h1>
-        <p className="text-[9px] text-red-900 font-bold uppercase tracking-[0.4em] mt-2">Active Surveillance Link // Guard ID: {typeof window !== 'undefined' ? Math.floor(Math.random() * 9999).toString().padStart(4, '0') : '0000'}</p>
+    <div className="max-w-sm mx-auto w-full space-y-5 pb-8">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Check-in</h1>
+        <p className="text-sm text-muted-foreground mt-1">Scan player QR code</p>
       </div>
 
       {error && (
-        <div className="p-4 rounded-none bg-red-950/20 border border-red-600/50 text-red-500 text-[10px] font-black uppercase tracking-widest animate-pulse">
-          ⚠️ System Error: {error}
+        <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm font-medium">
+          {error}
         </div>
       )}
 
       {!player && !loading && !needsRollNo && (
-        <div className="relative">
-          <div className="absolute -inset-4 border border-red-900/10 pointer-events-none" />
-          <QRScanner onScan={handleScan} onError={err => console.log('scan error:', err)} />
-        </div>
+        <QRScanner onScan={handleScan} onError={err => console.log('scan error:', err)} />
       )}
 
       {needsRollNo && !loading && (
-        <div className="h-card p-6 space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <div className="text-center mb-4">
-            <div className="w-16 h-16 flex items-center justify-center rounded-none border border-red-600/50 bg-red-950/20 mx-auto mb-6 horror-pulse">
-              <Camera className="w-8 h-8 text-red-600" />
+        <div className="h-card p-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="text-center mb-6">
+            <div className="w-12 h-12 flex items-center justify-center rounded-none border-2 border-red-500 bg-red-950/20 mx-auto mb-4">
+              <Camera className="w-6 h-6 text-red-500" />
             </div>
-            <p className="text-lg font-black uppercase tracking-[0.2em] text-white">Identity Missing</p>
-            <p className="text-[9px] text-red-900 font-bold uppercase tracking-widest mt-2">Map unassigned token to database record</p>
+            <p className="text-base font-black uppercase tracking-widest text-white">Unassigned QR Scanned</p>
+            <p className="text-xs text-red-900/80 font-bold uppercase tracking-wider mt-1">Please map this QR to a seeded student</p>
           </div>
           
-          <div className="space-y-4">
-            <div>
-              <label className="h-label">Protocol Roll Number</label>
-              <input 
-                type="text" 
-                value={rollNoInput} 
-                onChange={e => setRollNoInput(e.target.value)} 
-                className="h-input text-center text-xl tracking-[0.3em]" 
-                placeholder="000" 
-                onKeyDown={e => e.key === 'Enter' && verifyRollNo()}
-              />
-            </div>
+          <div>
+            <label className="h-label">Student Roll Number</label>
+            <input 
+              type="text" 
+              value={rollNoInput} 
+              onChange={e => setRollNoInput(e.target.value)} 
+              className="h-input" 
+              placeholder="e.g. 042" 
+              onKeyDown={e => e.key === 'Enter' && verifyRollNo()}
+            />
+          </div>
 
-            <div className="grid grid-cols-1 gap-3 pt-4">
-              <button onClick={verifyRollNo} className="h-btn w-full">Initiate Mapping</button>
-              <button onClick={reset} className="text-[10px] text-red-950 font-black uppercase tracking-widest hover:text-red-600 transition-colors">Abort Link</button>
-            </div>
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <button onClick={reset} className="h-btn-ghost">Cancel</button>
+            <button onClick={verifyRollNo} className="h-btn !bg-red-600">Verify Roll No</button>
           </div>
         </div>
       )}
 
       {loading && (
-        <div className="h-card p-16 flex flex-col items-center justify-center gap-6">
-          <div className="w-10 h-10 border-2 border-red-600 border-t-transparent rounded-none animate-spin" />
-          <p className="text-[10px] font-black text-red-600 uppercase tracking-[0.3em]">Deciphering Link...</p>
+        <div className="h-card p-12 flex flex-col items-center justify-center gap-4">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm font-medium text-foreground">Identifying Player...</p>
         </div>
       )}
 
       {player && (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
-          {/* Identity Header */}
-          <div className="h-card p-6 flex items-center gap-6 border-l-4 border-l-red-600">
-            <div className="w-16 h-16 rounded-none overflow-hidden bg-red-950/20 border border-red-900/30 flex-shrink-0">
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {/* Player info */}
+          <div className="h-card p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full overflow-hidden bg-surface-2 flex-shrink-0">
               {player.photoUrl
-                ? <img src={player.photoUrl} className="w-full h-full object-cover grayscale brightness-125" alt="" />
-                : <div className="w-full h-full flex items-center justify-center text-red-600 font-black text-2xl">
+                ? <img src={player.photoUrl} className="w-full h-full object-cover" alt="" />
+                : <div className="w-full h-full flex items-center justify-center text-muted-foreground font-medium text-lg">
                     {player.playerNumber.substring(0, 2)}
                   </div>
               }
             </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="text-xs font-black text-red-900 uppercase tracking-widest mb-1">Subject Identified</p>
-              <p className="text-xl font-black text-white truncate uppercase tracking-tighter">
-                {player.name || 'ANONYMOUS'}
+            <div className="flex-1">
+              <p className="text-base font-semibold text-foreground truncate">
+                {player.name || 'Unregistered Player'}
               </p>
-              <p className="text-[10px] font-mono text-red-600/60 mt-1">
-                ID: #{player.playerNumber.padStart(4, '0')}
+              <p className="text-sm text-muted-foreground">
+                ID: {player.playerNumber}
               </p>
             </div>
           </div>
 
           {player.isRegistered ? (
-            /* Locked identity */
-            <div className="h-card p-10 text-center space-y-8 bg-red-950/10">
-              <div className="w-20 h-20 flex items-center justify-center rounded-none border-2 border-red-600 mx-auto horror-pulse">
-                <Check className="w-10 h-10 text-red-600" />
+            /* Already registered */
+            <div className="h-card p-6 text-center space-y-4">
+              <div className="w-12 h-12 flex items-center justify-center rounded-full bg-green-100 mx-auto">
+                <Check className="w-6 h-6 text-green-600" />
               </div>
-              <div className="space-y-2">
-                <p className="text-xl font-black text-white uppercase tracking-widest">
-                  {registered ? 'LINK SECURED' : 'IDENTITY VERIFIED'}
+              <div>
+                <p className="text-base font-semibold text-foreground">
+                  {registered ? 'Registration Complete' : 'Player Verified'}
                 </p>
-                <p className="text-[9px] text-red-900 font-bold uppercase tracking-[0.2em]">
-                  Subject is now active in the protocol
+                <p className="text-sm text-muted-foreground mt-1">
+                  Player is active and ready.
                 </p>
               </div>
-              <div className="pt-4">
-                <button onClick={reset} className="h-btn w-full !bg-transparent border border-red-600/50 hover:!bg-red-600">
-                  Ready Next Subject
-                </button>
-              </div>
+              <button onClick={reset} className="h-btn-ghost w-full">
+                <RefreshCw className="w-4 h-4 mr-2" /> Scan Next
+              </button>
             </div>
           ) : (
-            /* Capture screen */
-            <div className="h-card p-6 space-y-6">
-              <div className="flex items-center justify-between border-b border-red-900/20 pb-4">
-                <p className="text-[10px] font-black text-white uppercase tracking-[0.2em]">New Link Initialization</p>
-                <div className="flex gap-1">
-                  <div className="w-1.5 h-1.5 bg-red-600" />
-                  <div className="w-1.5 h-1.5 bg-red-900" />
-                </div>
+            /* Registration form */
+            <div className="h-card p-5 space-y-4">
+              <p className="text-sm font-semibold text-foreground border-b border-border pb-2">
+                Register New Player
+              </p>
+
+              <div>
+                <label className="h-label">Full Name</label>
+                <input type="text" value={name} onChange={e => setName(e.target.value)} className="h-input" placeholder="Enter name" />
               </div>
 
               <div>
-                <label className="h-label">Confirm Name</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} className="h-input" placeholder="Enter identity name" />
-              </div>
-
-              <div className="relative">
-                <label className="h-label">Subject Capture</label>
+                <label className="h-label">Photo Identification</label>
                 {photo ? (
-                  <div className="relative rounded-none overflow-hidden aspect-square border border-red-600">
-                    <img src={photo} alt="Captured" className="w-full h-full object-cover grayscale contrast-125" />
+                  <div className="relative rounded-lg overflow-hidden aspect-square border border-border">
+                    <img src={photo} alt="Captured" className="w-full h-full object-cover" />
                     <button
                       onClick={() => setPhoto(null)}
-                      className="absolute bottom-4 right-4 bg-red-600 text-white p-3 rounded-none shadow-2xl hover:bg-red-500 transition-colors"
+                      className="absolute bottom-3 right-3 bg-white/90 text-foreground p-2 rounded-full shadow-sm hover:bg-white transition-colors"
                     >
-                      <RefreshCw className="w-5 h-5" />
+                      <RefreshCw className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
-                  <div className="border border-red-900/30 rounded-none overflow-hidden aspect-square relative bg-black">
+                  <div className="border border-border rounded-lg overflow-hidden aspect-square relative bg-surface-2">
                     <Webcam
                       audio={false}
                       ref={webcamRef}
                       screenshotFormat="image/jpeg"
                       videoConstraints={{ facingMode: facingMode, aspectRatio: 1 }}
-                      className="w-full h-full object-cover grayscale opacity-80"
+                      className="w-full h-full object-cover"
                     />
-                    {/* Camera scanline overlay */}
-                    <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%)] bg-[length:100%_4px]" />
-                    
-                    <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-4 px-6">
+                    <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3 px-4">
                       <button 
                         onClick={() => setFacingMode(prev => prev === 'user' ? 'environment' : 'user')}
-                        className="p-3 bg-black/60 border border-red-600/30 text-white hover:bg-red-600 transition-all"
+                        className="h-btn-small bg-white/90 text-foreground shadow-md hover:bg-white"
                       >
-                        <RefreshCw className="w-5 h-5" />
+                        <RefreshCw className="w-4 h-4 mr-2" /> Flip
                       </button>
-                      <button onClick={capture} className="h-btn !py-0 px-8 h-12 flex items-center justify-center">
-                        <Camera className="w-5 h-5 mr-3" /> CAPTURE IDENTITY
+                      <button onClick={capture} className="h-btn shadow-md">
+                        <Camera className="w-4 h-4 mr-2" /> Capture
                       </button>
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 gap-3 pt-6">
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <button onClick={reset} disabled={registering} className="h-btn-ghost">Cancel</button>
                 <button
                   onClick={registerPlayer}
                   disabled={registering || !photo || !name}
-                  className="h-btn !py-4"
+                  className="h-btn"
                 >
-                  {registering ? 'LOCKING IDENTITY...' : 'LOCK & FINALIZE LINK'}
+                  {registering ? 'Registering...' : 'Register Player'}
                 </button>
-                <button onClick={reset} disabled={registering} className="text-[10px] text-red-950 font-black uppercase tracking-widest hover:text-red-600 transition-colors">Abort Registration</button>
               </div>
             </div>
           )}

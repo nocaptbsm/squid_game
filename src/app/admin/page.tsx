@@ -12,20 +12,13 @@ import { ROUND_ORDER, ROUND_LABELS } from '@/lib/constants'
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 function StatCard({ label, value, icon: Icon, colorClass, href }: any) {
   const content = (
-    <div className="h-card p-6 h-full relative group overflow-hidden border-red-900/30">
-      <div className="absolute top-0 right-0 w-24 h-24 bg-red-600/5 -mr-12 -mt-12 rounded-full blur-3xl group-hover:bg-red-600/10 transition-colors" />
-      <div className="flex items-center justify-between mb-4 relative z-10">
-        <p className="text-[10px] font-black text-red-900/60 uppercase tracking-[0.2em]">{label}</p>
-        <div className={`p-2 rounded-none border border-red-900/20 bg-black/40 group-hover:border-red-600/50 transition-colors`}>
-          <Icon className="w-4 h-4 text-red-600 group-hover:horror-pulse" />
-        </div>
+    <div className="h-card p-6 h-full hover:border-primary/50 transition-colors cursor-pointer group">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+        <div className={`p-2 rounded-lg ${colorClass}`}><Icon className="w-5 h-5" /></div>
       </div>
-      <p className="text-4xl font-black text-white tracking-tighter relative z-10 font-mono">
-        {value.toLocaleString()}
-      </p>
-      <div className="mt-4 h-1 w-full bg-red-900/10 relative z-10">
-        <div className="h-full bg-red-600 w-1/3 group-hover:w-full transition-all duration-700" />
-      </div>
+      <p className="text-3xl font-bold text-foreground">{value}</p>
+      <p className="text-xs text-muted-foreground mt-2 group-hover:text-primary transition-colors">View players →</p>
     </div>
   )
   return href ? <Link href={href}>{content}</Link> : content
@@ -139,12 +132,12 @@ export default function AdminDashboard() {
       {/* Title */}
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter text-white uppercase horror-glitch" data-text="DASHBOARD">DASHBOARD</h1>
-          <p className="text-[10px] text-red-900 font-bold uppercase tracking-[0.3em] mt-2">Protocol Live Feed // System Status: STABLE</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-2">Live overview of all participant data.</p>
         </div>
         <button 
           onClick={refreshData}
-          className="h-btn-small !bg-[#020202] border-r border-red-900/40 min-h-screen flex flex-col fixed md:relative z-50 transition-all duration-300 ease-in-out shadow-[20px_0_40px_rgba(0,0,0,0.9)] font-black text-[10px] tracking-widest"
+          className="h-btn-small !bg-transparent border border-red-900/30 text-red-900/60 hover:text-red-600 transition-all flex items-center gap-2 uppercase font-black text-[10px] tracking-widest"
         >
           <Activity className="w-3 h-3" />
           Refresh Data
