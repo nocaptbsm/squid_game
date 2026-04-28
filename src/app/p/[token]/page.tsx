@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { ROUND_LABELS } from '@/lib/constants'
-import { SquidGameProfile } from '@/components/squid/SquidGameProfile'
+import SquidGameProfile from '@/components/squid/SquidGameProfile'
 
 export const dynamic = 'force-dynamic'
 

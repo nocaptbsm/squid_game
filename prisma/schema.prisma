@@ -19,15 +19,15 @@ model User {
 }
 
 model Player {
-  id           String       @id @default(cuid())
-  qrToken      String?      @unique  // UUID embedded in QR - Optional for seeded players
-  playerNumber String       @unique  // e.g. "001", "042", "169"
+  id           String        @id @default(cuid())
+  qrToken      String?       @unique
+  playerNumber String        @unique
   name         String?
   photoUrl     String?
-  photoLocked  Boolean      @default(false)
-  isRegistered Boolean      @default(false)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  photoLocked  Boolean       @default(false)
+  isRegistered Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   rounds       RoundStatus[]
   scans        Scan[]
   teamLogin    TeamLogin?
@@ -35,30 +35,30 @@ model Player {
 
 model RoundStatus {
   id        String      @id @default(cuid())
-  player    Player      @relation(fields: [playerId], references: [id])
   playerId  String
   round     RoundName
   status    RoundResult @default(PENDING)
   updatedAt DateTime    @updatedAt
-  updatedBy String?     // volunteer userId
+  updatedBy String?
+  player    Player      @relation(fields: [playerId], references: [id])
 
   @@unique([playerId, round])
 }
 
 model Scan {
-  id         String   @id @default(cuid())
-  player     Player   @relation(fields: [playerId], references: [id])
-  playerId   String
-  volunteer  User     @relation(fields: [volunteerId], references: [id])
+  id          String   @id @default(cuid())
+  playerId    String
   volunteerId String
-  scannedAt  DateTime @default(now())
+  scannedAt   DateTime @default(now())
+  player      Player   @relation(fields: [playerId], references: [id])
+  volunteer   User     @relation(fields: [volunteerId], references: [id])
 }
 
 model TeamLogin {
   id       String @id @default(cuid())
-  player   Player @relation(fields: [playerId], references: [id])
   playerId String @unique
-  pin      String // 4-digit hashed PIN for player self-view
+  pin      String
+  player   Player @relation(fields: [playerId], references: [id])
 }
 
 model ProtocolToken {
@@ -74,7 +74,7 @@ enum Role {
 }
 
 enum RoundName {
-  PRELIMINARY       // Treasure Hunt
+  PRELIMINARY
   RED_LIGHT_GREEN_LIGHT
   HITCH_HIKE
   SOUL_SEEKERS
