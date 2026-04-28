@@ -9,12 +9,15 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Delete all players (this will cascade delete round statuses and scans due to schema)
-    // Actually, let's be explicit and safe.
+    // Full Protocol Reset
     await prisma.$transaction([
       prisma.scan.deleteMany({}),
       prisma.roundStatus.deleteMany({}),
       prisma.player.deleteMany({}),
+      // Also unlock all protocol tokens so they can be reused
+      prisma.protocolToken.updateMany({
+        data: { isUsed: false }
+      }),
     ])
 
     return NextResponse.json({ success: true, message: 'All seeded students have been removed.' })
