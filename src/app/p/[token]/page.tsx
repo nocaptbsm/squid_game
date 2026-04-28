@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { ROUND_LABELS } from '@/lib/constants'
 import { Trophy, Shield, XCircle, Clock } from 'lucide-react'
+import { AudioSync } from '@/components/squid/AudioSync'
 
 export const dynamic = 'force-dynamic'
 
@@ -64,6 +65,7 @@ export default async function PublicPlayerProfile({ params }: { params: { token:
 
   return (
     <div className="min-h-screen bg-[#051919] text-white p-6 pb-12">
+      <AudioSync />
       <div className="max-w-md mx-auto space-y-8">
         {/* Header */}
         <div className="text-center pt-8">
