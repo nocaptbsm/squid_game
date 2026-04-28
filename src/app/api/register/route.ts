@@ -47,28 +47,47 @@ export async function POST(request: Request) {
       public_id: `player_${player.playerNumber}`,
     })
 
-    const updatedPlayer = await prisma.player.update({
-      where: { id: playerId },
-      data: {
-        name,
-        qrToken, // Map the physical QR to this player
-        photoUrl: uploadResponse.secure_url,
-        isRegistered: true,
-        photoLocked: true,
-      }
+    // Verify token availability
+    const tokenRecord = await prisma.protocolToken.findUnique({
+      where: { token: qrToken }
     })
 
-    // Mark the protocol token as used
-    await prisma.protocolToken.update({
-      where: { token: qrToken },
-      data: { isUsed: true }
-    })
+    if (!tokenRecord) {
+      return NextResponse.json({ error: 'Invalid identity token' }, { status: 400 })
+    }
 
-    await prisma.scan.create({
-      data: {
-        playerId: player.id,
-        volunteerId: session.user.id,
-      }
+    if (tokenRecord.isUsed) {
+      return NextResponse.json({ error: 'This QR code has already been assigned to another student' }, { status: 409 })
+    }
+
+    const updatedPlayer = await prisma.$transaction(async (tx) => {
+      // 1. Update player
+      const p = await tx.player.update({
+        where: { id: playerId },
+        data: {
+          name,
+          qrToken,
+          photoUrl: uploadResponse.secure_url,
+          isRegistered: true,
+          photoLocked: true,
+        }
+      })
+
+      // 2. Mark the protocol token as used
+      await tx.protocolToken.update({
+        where: { token: qrToken },
+        data: { isUsed: true }
+      })
+
+      // 3. Create scan log
+      await tx.scan.create({
+        data: {
+          playerId: player.id,
+          volunteerId: session.user.id,
+        }
+      })
+
+      return p
     })
 
     return NextResponse.json(updatedPlayer)
