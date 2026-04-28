@@ -19,6 +19,23 @@ export default function VolunteerScanPage() {
   const [needsRollNo, setNeedsRollNo] = useState(false)
   const webcamRef = useRef<Webcam>(null)
 
+  const playBeep = useCallback(() => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const oscillator = audioCtx.createOscillator()
+      const gainNode = audioCtx.createGain()
+      oscillator.connect(gainNode)
+      gainNode.connect(audioCtx.destination)
+      oscillator.type = 'sine'
+      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime)
+      gainNode.gain.setValueAtTime(0, audioCtx.currentTime)
+      gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05)
+      gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2)
+      oscillator.start()
+      oscillator.stop(audioCtx.currentTime + 0.2)
+    } catch (e) { console.error(e) }
+  }, [])
+
   const handleScan = async (rawValue: string) => {
     setLoading(true)
     setError('')
@@ -41,6 +58,8 @@ export default function VolunteerScanPage() {
       
       if (!res.ok) throw new Error(data.error || 'Scan failed')
 
+      playBeep()
+
       if (data.isUnassigned) {
         setQrToken(data.qrToken)
         setNeedsRollNo(true)
@@ -48,6 +67,10 @@ export default function VolunteerScanPage() {
         setPlayer(data.player)
         setName(data.player.name || '')
         setPhoto(null)
+        // If already registered, auto-reset after 1.5s
+        if (data.player.isRegistered) {
+          setTimeout(reset, 1500)
+        }
       }
     } catch (err: any) {
       setError(err.message)
@@ -96,8 +119,10 @@ export default function VolunteerScanPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Registration failed')
+      playBeep()
       setPlayer(data.player)
       setRegistered(true)
+      setTimeout(reset, 2000)
     } catch (err: any) {
       setError(err.message)
     } finally {
