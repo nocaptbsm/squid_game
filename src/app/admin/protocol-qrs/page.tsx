@@ -58,37 +58,6 @@ export default function ProtocolQRsPage() {
     }
   }
 
-  const downloadAll = async () => {
-    if (tokens.length === 0) return
-    setLoading(true)
-    try {
-      const JSZip = (await import('jszip')).default
-      const saveAs = (await import('file-saver')).saveAs
-      const zip = new JSZip()
-      const folder = zip.folder('protocol_qrs')
-
-      // Fetch all images in parallel (chunks of 20 to avoid overwhelming)
-      const chunkSize = 20
-      for (let i = 0; i < tokens.length; i += chunkSize) {
-        const chunk = tokens.slice(i, i + chunkSize)
-        await Promise.all(chunk.map(async (t, idx) => {
-          const response = await fetch(`/api/qr/${t.token}`)
-          const blob = await response.blob()
-          const filename = `qr_${String(i + idx + 1).padStart(3, '0')}_${t.token.substring(0, 8)}.png`
-          folder?.file(filename, blob)
-        }))
-      }
-
-      const content = await zip.generateAsync({ type: 'blob' })
-      saveAs(content, `squid_game_protocol_qrs_${new Date().getTime()}.zip`)
-    } catch (err) {
-      console.error(err)
-      alert('Failed to generate ZIP')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const printQRs = () => {
     window.print()
   }
@@ -97,7 +66,7 @@ export default function ProtocolQRsPage() {
     return (
       <div className="flex h-60 items-center justify-center text-muted-foreground gap-3">
         <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-        <span className="text-sm font-medium">Processing Registry...</span>
+        <span className="text-sm font-medium">Loading protocol tokens...</span>
       </div>
     )
   }
@@ -132,13 +101,6 @@ export default function ProtocolQRsPage() {
               >
                 {clearing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                 Clear Registry
-              </button>
-              <button
-                onClick={downloadAll}
-                className="h-btn-ghost flex items-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Download ZIP
               </button>
               <button
                 onClick={printQRs}
