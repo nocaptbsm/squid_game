@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { Users, UserCheck, Activity, XCircle } from 'lucide-react'
+import { Users, UserCheck, Activity, XCircle, Trophy } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -92,6 +92,11 @@ export default function AdminDashboard() {
   const eliminated = players.filter(p => p.rounds?.some((r: any) => r.status === 'ELIMINATED')).length
   const surviving = registered - eliminated
   const pending = total - registered
+  
+  // Winners: Survived the final round (Chocolate Crucible)
+  const winners = players.filter(p => 
+    p.rounds?.some((r: any) => r.round === 'CHOCOLATE_CRUCIBLE' && r.status === 'SURVIVED')
+  )
 
   // ── Donut data ───────────────────────────────────────────────────
   const statusDonut = [
@@ -140,11 +145,12 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard label="Total Seeded"  value={total}      icon={Users}     colorClass="bg-gray-100 text-gray-600"  href="/admin/players?filter=all" />
         <StatCard label="Registered"    value={registered} icon={UserCheck} colorClass="bg-blue-50 text-blue-600"   href="/admin/players?filter=registered" />
         <StatCard label="Surviving"     value={surviving}  icon={Activity}  colorClass="bg-green-50 text-green-600" href="/admin/players?filter=surviving" />
         <StatCard label="Eliminated"    value={eliminated} icon={XCircle}   colorClass="bg-red-50 text-red-600"     href="/admin/players?filter=eliminated" />
+        <StatCard label="Winners"       value={winners.length} icon={Trophy} colorClass="bg-yellow-50 text-yellow-600" href="/admin/players?filter=winners" />
       </div>
 
       {/* Row 1: Funnel + Donut */}
@@ -360,6 +366,55 @@ export default function AdminDashboard() {
           </table>
         </div>
       </div>
+
+      {/* Row 5: Winners List */}
+      {winners.length > 0 && (
+        <div className="h-card overflow-hidden border-yellow-500/20 mb-12">
+          <div className="p-6 border-b border-yellow-900/10 bg-yellow-500/5 flex justify-between items-center">
+            <div>
+              <h3 className="text-base font-semibold text-yellow-500 uppercase tracking-widest flex items-center gap-2">
+                <Trophy className="w-5 h-5" /> Paradox Champions
+              </h3>
+              <p className="text-[10px] text-yellow-900 font-bold uppercase tracking-wider mt-1">Final survivors of the Chocolate Crucible</p>
+            </div>
+            <div className="text-right">
+              <span className="text-2xl font-black text-yellow-500">{winners.length}</span>
+              <span className="text-yellow-900 text-sm font-bold uppercase ml-1">Winners</span>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-yellow-950/10 text-[10px] font-black uppercase tracking-[0.3em] text-yellow-900/60 border-b border-yellow-900/10">
+                  <th className="px-6 py-4 font-black">Winner No.</th>
+                  <th className="px-6 py-4 font-black">Identity</th>
+                  <th className="px-6 py-4 font-black text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-yellow-900/5">
+                {winners.map((winner) => (
+                  <tr key={winner.id} className="hover:bg-yellow-500/5 transition-colors group">
+                    <td className="px-6 py-4">
+                      <span className="text-sm font-black text-yellow-500 font-mono tracking-tighter"># {winner.playerNumber}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        {winner.photoUrl && <img src={winner.photoUrl} className="w-8 h-8 rounded-full object-cover border border-yellow-500/30" alt="" />}
+                        <span className="text-sm font-bold text-yellow-100 group-hover:text-yellow-400 transition-colors uppercase tracking-widest">{winner.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 bg-yellow-500/20 text-yellow-500 border border-yellow-500/40">
+                        PARADOX CHAMPION
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
