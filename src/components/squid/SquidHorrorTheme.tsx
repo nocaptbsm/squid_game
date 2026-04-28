@@ -70,11 +70,9 @@ export function SquidHorrorTheme() {
     }
   }, [isMuted])
 
-  useEffect(() => {
-    const handleSync = (e: any) => setIsMuted(e.detail.isMuted)
-    window.addEventListener('paradox-audio-toggle' as any, handleSync)
-    return () => window.removeEventListener('paradox-audio-toggle' as any, handleSync)
-  }, [])
+  const toggleMute = () => {
+    setIsMuted(prev => !prev)
+  }
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
@@ -112,6 +110,16 @@ export function SquidHorrorTheme() {
       <div className="absolute top-[15%] right-[10%] w-2 h-2 rounded-full bg-red-600 blur-[2px] opacity-0 animate-eye-glow z-40" />
       <div className="absolute top-[15%] right-[12%] w-2 h-2 rounded-full bg-red-600 blur-[2px] opacity-0 animate-eye-glow z-40" />
 
+      {/* Mute Toggle */}
+      <div className="fixed bottom-6 right-6 pointer-events-auto z-[10000]">
+        <button
+          onClick={toggleMute}
+          className="p-3 rounded-md bg-black/80 border border-red-900/50 text-red-600 backdrop-blur-xl hover:bg-red-900/20 transition-all shadow-[0_0_20px_rgba(227,27,109,0.1)] group"
+        >
+          {isMuted ? <VolumeX className="w-5 h-5 group-hover:scale-110" /> : <Volume2 className="w-5 h-5 group-hover:scale-110" />}
+          <span className="sr-only">Toggle Atmosphere</span>
+        </button>
+      </div>
 
       <style jsx global>{`
         @keyframes flicker {
