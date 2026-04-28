@@ -209,11 +209,41 @@ function PlayersListContent() {
         <PlayerDrawer playerId={selectedPlayerId} onClose={() => setSelectedPlayerId(null)} />
       )}
 
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Players</h1>
-        <p className="text-sm text-muted-foreground mt-2">
-          {players.length} participants · Click a name to view full details
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Players</h1>
+          <p className="text-sm text-muted-foreground mt-2">
+            {players.length} participants · Click a name to view full details
+          </p>
+        </div>
+        
+        <button 
+          onClick={async () => {
+            if (confirm('⚠️ WARNING: This will permanently delete ALL seeded students, their photos, and their round progress. This cannot be undone. Are you sure?')) {
+              if (confirm('FINAL CONFIRMATION: Clear the entire database?')) {
+                setLoading(true)
+                try {
+                  const res = await fetch('/api/admin/players/delete-all', { method: 'DELETE' })
+                  const data = await res.json()
+                  if (data.success) {
+                    setPlayers([])
+                    alert('Database cleared successfully.')
+                  } else {
+                    alert('Error: ' + data.error)
+                  }
+                } catch (err) {
+                  alert('Failed to delete players.')
+                } finally {
+                  setLoading(false)
+                }
+              }
+            }
+          }}
+          className="h-btn !bg-red-600/10 !text-red-500 border border-red-500/20 hover:!bg-red-600 hover:!text-white transition-all flex items-center gap-2 text-xs uppercase font-black tracking-widest px-4 py-2"
+        >
+          <X className="w-4 h-4" />
+          Delete All Players
+        </button>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
