@@ -7,8 +7,33 @@ export default function SquidGameProfile({ player, protocolToken, roundLabels }:
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Show animation for 3 seconds
-    const timer = setTimeout(() => setLoading(false), 3000)
+    // Audio sequence logic
+    const playAudioSequence = async () => {
+      try {
+        const audio1 = new Audio('/audio/scan_start.mp3')
+        const audio2 = new Audio('/audio/mingle_squid_game.mp3')
+
+        // Play first audio
+        audio1.play().catch(e => console.log('Audio 1 skip:', e))
+        
+        // When first ends, play second
+        audio1.onended = () => {
+          audio2.play().catch(e => console.log('Audio 2 skip:', e))
+        }
+
+        // If audio1 fails to load/play, try audio2 immediately as fallback
+        audio1.onerror = () => {
+          audio2.play().catch(e => console.log('Audio 2 fallback skip:', e))
+        }
+      } catch (e) {
+        console.error('Audio sequence failed', e)
+      }
+    }
+
+    playAudioSequence()
+
+    // Show animation for 4 seconds to accommodate audio
+    const timer = setTimeout(() => setLoading(false), 4500)
     return () => clearTimeout(timer)
   }, [])
 
